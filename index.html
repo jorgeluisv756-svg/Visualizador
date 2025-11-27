@@ -21,7 +21,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
     #logo img {
-      width: 420px;
+      width: 360px;
       height: auto;
       display: block;
       max-width: 90vw;
@@ -58,6 +58,11 @@
       height: 20px;
       margin-right: 6px;
     }
+
+    @media (max-width: 600px) {
+      #logo img { width: 200px; }
+      #panel { width: 200px; font-size: 12px; }
+    }
   </style>
 </head>
 <body>
@@ -76,13 +81,17 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
+    // Inicializar mapa
     var map = L.map('map').setView([20.1, -98.7], 8);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
 
+    // Capas base
     var municipiosLayer, regionesLayer, edoLayer;
     var informe1Layer, informe2Layer, informesData;
 
-    // Municipios
+    // Municipios (1a capa)
     fetch('Municipios.geojson')
       .then(res => res.json())
       .then(data => {
@@ -91,7 +100,7 @@
         }).addTo(map);
       });
 
-    // Regiones
+    // Regiones (3a capa)
     fetch('Regiones.geojson')
       .then(res => res.json())
       .then(data => {
@@ -100,7 +109,7 @@
         }).addTo(map);
       });
 
-    // Edo_Hgo
+    // Edo_Hgo (última capa)
     fetch('Edo_Hgo.geojson')
       .then(res => res.json())
       .then(data => {
@@ -118,10 +127,43 @@
     var radios = document.getElementsByName('mapOption');
 
     function limpiarInformes() {
-      if (informe1Layer) map.removeLayer(informe1Layer);
-      if (informe2Layer) map.removeLayer(informe2Layer);
+      if (informe1Layer) { map.removeLayer(informe1Layer); informe1Layer = null; }
+      if (informe2Layer) { map.removeLayer(informe2Layer); informe2Layer = null; }
     }
 
+    // Utilidad: extraer valor desde HTML incrustado en properties
+    // - Tolera espacios, saltos de línea y comillas
+    // - Remueve comas de miles y simbolos extra
+    function extraerValor(properties, campo) {
+      var raw = JSON.stringify(properties);
+      var regex = new RegExp(campo + "\\s*<\\/td>\\s*<td>\\s*([^<]+)\\s*<\\/td>", "i");
+      var match = raw.match(regex);
+      if (!match) return NaN;
+      var limpio = match[1]
+        .replace(/[,]/g, "")     // quitar comas de miles
+        .replace(/[^\d.\-]/g, ""); // quitar símbolos no numéricos
+      var valor = parseFloat(limpio);
+      return isNaN(valor) ? NaN : valor;
+    }
+
+    // Estilo por inversión del 1er informe (rangos exactos)
+    function estiloInversion1(valor) {
+      if (isNaN(valor) || valor === 0) {
+        return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 0.7 };
+      } else if (valor >= 1 && valor <= 66000) {
+        return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 0.7 };
+      } else if (valor >= 66001 && valor <= 126000) {
+        return { fillColor: "rgb(225,200,150)", color: "#333", weight: 1, fillOpacity: 0.7 };
+      } else if (valor >= 126001 && valor <= 240000) {
+        return { fillColor: "rgb(180,150,100)", color: "#333", weight: 1, fillOpacity: 0.7 };
+      } else if (valor >= 240001 && valor <= 1122000) {
+        return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 0.7 };
+      } else {
+        return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 0.7 };
+      }
+    }
+
+    // Eventos de selección
     Array.from(radios).forEach(radio => {
       radio.addEventListener('change', function(e) {
         limpiarInformes();
@@ -130,20 +172,16 @@
           if (informesData) {
             informe1Layer = L.geoJSON(informesData, {
               style: function(f) {
-                let valor = parseFloat(f.properties.ExpTra1eIn); // 👈 conversión segura de Double
-                if (valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 0.7 };
-                else if (valor >= 1 && valor <= 66000) return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 0.7 };
-                else if (valor >= 66001 && valor <= 126000) return { fillColor: "rgb(225,200,150)", color: "#333", weight: 1, fillOpacity: 0.7 };
-                else if (valor >= 126001 && valor <= 240000) return { fillColor: "rgb(180,150,100)", color: "#333", weight: 1, fillOpacity: 0.7 };
-                else if (valor >= 240001 && valor <= 1122000) return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 0.7 };
-                else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 0.7 };
+                var valor = extraerValor(f.properties, "ExpTra1eIn");
+                return estiloInversion1(valor);
               }
             }).addTo(map);
 
-            municipiosLayer.bringToBack();
-            informe1Layer.bringToFront();
-            regionesLayer.bringToFront();
-            edoLayer.bringToFront();
+            // Orden: Municipios → TuExpTrans → Regiones → Edo_Hgo
+            municipiosLayer && municipiosLayer.bringToBack();
+            informe1Layer && informe1Layer.bringToFront();
+            regionesLayer && regionesLayer.bringToFront();
+            edoLayer && edoLayer.bringToFront();
 
             legendDiv.style.display = "block";
           }
@@ -151,8 +189,8 @@
           if (informesData) {
             informe2Layer = L.geoJSON(informesData, {
               style: function(f) {
-                let valor = parseFloat(f.properties.ExpTra2dIn); // 👈 conversión segura de Double
-                // Puedes definir rangos distintos para el 2do informe si lo requieres
+                var valor = extraerValor(f.properties, "ExpTra2dIn");
+                // Estilo genérico (puedes definir rangos propios aquí)
                 return {
                   fillColor: "rgba(60,120,200,0.35)",
                   color: "rgb(60,120,200)",
@@ -162,10 +200,10 @@
               }
             }).addTo(map);
 
-            municipiosLayer.bringToBack();
-            informe2Layer.bringToFront();
-            regionesLayer.bringToFront();
-            edoLayer.bringToFront();
+            municipiosLayer && municipiosLayer.bringToBack();
+            informe2Layer && informe2Layer.bringToFront();
+            regionesLayer && regionesLayer.bringToFront();
+            edoLayer && edoLayer.bringToFront();
 
             legendDiv.style.display = "none";
           }
@@ -173,7 +211,7 @@
       });
     });
 
-    // Tabla de inversión (solo para 1er informe)
+    // Construir la leyenda (1er informe)
     var segmentos = [
       { color: "rgb(204,204,204)", label: "Sin inversión" },
       { color: "rgb(245,230,210)", label: "$1 - $66,000" },
@@ -181,7 +219,7 @@
       { color: "rgb(180,150,100)", label: "$126,001 - $240,000" },
       { color: "rgb(137,112,68)", label: "$240,001 - $1,122,000" }
     ];
-    segmentos.forEach(s => {
+    segmentos.forEach(function(s) {
       var row = document.createElement('div');
       var box = document.createElement('span');
       box.style.background = s.color;

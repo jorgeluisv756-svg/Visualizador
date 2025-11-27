@@ -42,6 +42,25 @@
     }
     #panel h3 { margin-top: 0; font-size: 14px; text-align: center; }
 
+    #etiquetas-panel {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      z-index: 1000;
+      background: white;
+      padding: 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      font-family: Arial, sans-serif;
+      width: 180px;
+      font-size: 13px;
+    }
+    #etiquetas-panel h3 {
+      margin-top: 0;
+      font-size: 13px;
+      text-align: center;
+    }
+
     #legend {
       margin-top: 10px;
       font-size: 12px;
@@ -101,6 +120,12 @@
     <label><input type="radio" name="mapOption" value="informe1"> Tu Experiencia Transforma 1er Informe</label><br>
     <label><input type="radio" name="mapOption" value="informe2"> Tu Experiencia Transforma 2do Informe</label>
     <div id="legend"><strong>INVERSIÓN</strong></div>
+  </div>
+
+  <div id="etiquetas-panel">
+    <h3>Selecciona etiqueta</h3>
+    <label><input type="checkbox" id="toggleMunicipios" checked> Municipales</label><br>
+    <label><input type="checkbox" id="toggleRegiones" checked> Regionales</label>
   </div>
 
   <div id="map"></div>
@@ -183,6 +208,22 @@
           style: { opacity: 0, fillOpacity: 0 }
         });
       });
+
+    document.getElementById('toggleMunicipios').addEventListener('change', function(e) {
+      if (e.target.checked) {
+        map.addLayer(municipiosLabelLayer);
+      } else {
+        map.removeLayer(municipiosLabelLayer);
+      }
+    });
+
+    document.getElementById('toggleRegiones').addEventListener('change', function(e) {
+      if (e.target.checked) {
+        map.addLayer(regionesLabelLayer);
+      } else {
+        map.removeLayer(regionesLabelLayer);
+      }
+    });
 
     // Edo_Hgo
     fetch('Edo_Hgo.geojson')

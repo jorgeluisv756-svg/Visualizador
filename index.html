@@ -99,7 +99,7 @@
     var municipiosLayer, regionesLayer, edoLayer;
 
     // Municipios (capa inferior)
-    fetch('Municipios.json')
+    fetch('Municipios.geojson')
       .then(res => res.json())
       .then(data => {
         municipiosLayer = L.geoJSON(data, {
@@ -108,7 +108,7 @@
       });
 
     // Regiones (capa intermedia)
-    fetch('Regiones.json')
+    fetch('Regiones.geojson')
       .then(res => res.json())
       .then(data => {
         regionesLayer = L.geoJSON(data, {
@@ -117,7 +117,7 @@
       });
 
     // Estado (capa superior)
-    fetch('Edo_Hgo.json')
+    fetch('Edo_Hgo.geojson')
       .then(res => res.json())
       .then(data => {
         edoLayer = L.geoJSON(data, {

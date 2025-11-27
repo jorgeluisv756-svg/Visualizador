@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Visualizador de Municipios</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    html, body { height: 100%; margin: 0; padding: 0; }
+    #map { height: 100%; width: 100%; }
+
+    /* Logo institucional */
+    #logo {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 9999;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 5px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    #logo img {
+      width: 360px;
+      height: auto;
+      display: block;
+      max-width: 90vw;
+    }
+
+    /* Panel lateral */
+    #panel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      background: white;
+      padding: 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      font-family: Arial, sans-serif;
+      width: 240px;
+      max-width: 90vw;
+    }
+    #panel h3 { margin-top: 0; font-size: 14px; text-align: center; }
+
+    /* Tabla de leyenda */
+    #legend {
+      margin-top: 10px;
+      font-size: 12px;
+      display: none; /* Oculta por defecto */
+    }
+    #legend div {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    #legend span {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      margin-right: 6px;
+    }
+
+    @media (max-width: 600px) {
+      #logo img { width: 200px; }
+      #panel { width: 180px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Logo institucional -->
+  <div id="logo">
+    <img src="https://raw.githubusercontent.com/jorgeluisv756-svg/imagenes_kmz/7c7924c0d0c89c5adaf112d1b8e3fb9db3258400/Logotipo%20armas30%20(1).png" alt="Logo Institucional">
+  </div>
+
+  <!-- Panel lateral -->
+  <div id="panel">
+    <h3>Selecciona mapa</h3>
+    <label><input type="radio" name="mapOption" value="informe1"> Tu Experiencia Transforma 1er Informe</label><br>
+    <label><input type="radio" name="mapOption" value="informe2"> Tu Experiencia Transforma 2do Informe</label><br>
+    <label><input type="radio" name="mapOption" value="base" checked> Mapa Base</label>
+    <div id="legend"><strong>INVERSIÓN</strong></div>
+  </div>
+
+  <!-- Contenedor del mapa -->
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    var map = L.map('map').setView([20.1, -98.7], 8);
+
+    // Base OSM
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Capas del mapa base
+    var municipiosLayer, regionesLayer, edoLayer;
+
+    // Municipios (capa inferior)
+    fetch('Municipios.geojson')
+      .then(res => res.json())
+      .then(data => {
+        municipiosLayer = L.geoJSON(data, {
+          style: { color: "#999", weight: 1, fillOpacity: 0 }
+        }).addTo(map);
+      });
+
+    // Regiones (capa intermedia)
+    fetch('Regiones.geojson')
+      .then(res => res.json())
+      .then(data => {
+        regionesLayer = L.geoJSON(data, {
+          style: { color: "#555", weight: 2, fillOpacity: 0 }
+        }).addTo(map);
+      });
+
+    // Estado (capa superior)
+    fetch('Edo_Hgo.geojson')
+      .then(res => res.json())
+      .then(data => {
+        edoLayer = L.geoJSON(data, {
+          style: { color: "#000", weight: 3, fillOpacity: 0 }
+        }).addTo(map);
+      });
+
+    // Función para estilo según rangos
+    function estiloPorInversion(valor) {
+      if (valor <= 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 0.7 };
+      else if (valor <= 66000) return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 0.7 };
+      else if (valor <= 126000) return { fillColor: "rgb(225,200,150)", color: "#333", weight: 1, fillOpacity: 0.7 };
+      else if (valor <= 240000) return { fillColor: "rgb(180,150,100)", color: "#333", weight: 1, fillOpacity: 0.7 };
+      else return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 0.7 };
+    }
+
+    var informe1Layer, informe2Layer;
+
+    // Cargar GeoJSON de TuExpTrans
+    fetch('TuExpTrans.geojson')
+      .then(res => res.json())
+      .then(data => {
+        informe1Layer = L.geoJSON(data, {
+          style: f => estiloPorInversion(f.properties.ExpTra1eIn)
+        });
+        informe2Layer = L.geoJSON(data, {
+          style: f => estiloPorInversion(f.properties.ExpTra2dIn)
+        });
+      });
+
+    // Manejo de selección
+    var legendDiv = document.getElementById('legend');
+    var radios = document.getElementsByName('mapOption');
+
+    radios.forEach(radio => {
+      radio.addEventListener('change', function(e) {
+        // limpiar capas de informes
+        if (informe1Layer) map.removeLayer(informe1Layer);
+        if (informe2Layer) map.removeLayer(informe2Layer);
+
+        // siempre mantener el mapa base (municipios, regiones, estado)
+        if (e.target.value === 'informe1') {
+          informe1Layer.addTo(map);
+          legendDiv.style.display = "block"; // mostrar tabla
+        } else if (e.target.value === 'informe2') {
+          informe2Layer.addTo(map);
+          legendDiv.style.display = "none"; // ocultar tabla
+        } else {
+          legendDiv.style.display = "none"; // ocultar tabla
+        }
+      });
+    });
+
+    // Contenido de la tabla (solo se genera una vez)
+    var segmentos = [
+      { color: "rgb(204,204,204)", label: "Sin inversión" },
+      { color: "rgb(245,230,210)", label: "$1 - $66,000" },
+      { color: "rgb(225,200,150)", label: "$66,001 - $126,000" },
+      { color: "rgb(180,150,100)", label: "$126,001 - $240,000" },
+      { color: "rgb(137,112,68)", label: "$240,001 - $1,122,000" }
+    ];
+    segmentos.forEach(s => {
+      var row = document.createElement('div');
+      var box = document.createElement('span');
+      box.style.background = s.color;
+      row.appendChild(box);
+      row.appendChild(document.createTextNode(s.label));
+      legendDiv.appendChild(row);
+    });
+  </script>
+</body>
+</html>

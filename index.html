@@ -21,7 +21,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
     #logo img {
-      width: 360px;
+      width: 420px;
       height: auto;
       display: block;
       max-width: 90vw;
@@ -59,7 +59,7 @@
       margin-right: 6px;
     }
 
-    /* Etiquetas */
+    /* Etiquetas en pane dedicado */
     .region-label {
       font-size: 13px;
       font-weight: bold;
@@ -68,6 +68,7 @@
       background: rgba(255,255,255,0.6);
       padding: 2px 4px;
       border-radius: 3px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
     .mun-label {
       font-size: 10px;
@@ -76,6 +77,7 @@
       background: rgba(255,255,255,0.6);
       padding: 1px 3px;
       border-radius: 3px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
 
     @media (max-width: 600px) {
@@ -106,44 +108,73 @@
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Capas base
+    // Pane para etiquetas por encima de todo, sin capturar eventos
+    map.createPane('labels');
+    map.getPane('labels').style.zIndex = 650;
+    map.getPane('labels').style.pointerEvents = 'none';
+
+    // Capas base y grupos de etiquetas
     var municipiosLayer, regionesLayer, edoLayer;
     var informe1Layer, informe2Layer, informesData;
+    var regionesLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
+    var municipiosLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
 
-    // Municipios (con etiquetas CVE_MUN)
+    // Municipios con etiquetas CVE_MUN (dirección auto para evitar choque)
     fetch('Municipios.geojson')
       .then(res => res.json())
       .then(data => {
         municipiosLayer = L.geoJSON(data, {
-          style: { color: "#999", weight: 1, fillOpacity: 0 },
-          onEachFeature: function (feature, layer) {
-            if (feature.properties && feature.properties.CVE_MUN) {
-              layer.bindTooltip(String(feature.properties.CVE_MUN), {
-                permanent: true,
-                direction: "auto", // se ajusta si hay conflicto
-                className: "mun-label"
-              });
-            }
-          }
+          style: { color: "#999", weight: 1, fillOpacity: 0 }
         }).addTo(map);
+
+        // Etiquetas: usar centro del bounds del polígono
+        L.geoJSON(data, {
+          onEachFeature: function(feature, layer) {
+            if (!feature || !feature.properties) return;
+            var val = feature.properties.CVE_MUN;
+            if (val === undefined) return;
+            // Centro del feature
+            var center = layer.getBounds ? layer.getBounds().getCenter() : null;
+            if (!center) return;
+            L.marker(center, { pane: 'labels', interactive: false })
+              .bindTooltip(String(val), {
+                permanent: true,
+                direction: "auto",
+                offset: [10, 0], // ligero desplazamiento para minimizar choque con Regiones
+                className: "mun-label"
+              })
+              .addTo(municipiosLabelLayer);
+          },
+          style: { opacity: 0, fillOpacity: 0 } // no afecta, solo para iterar
+        });
       });
 
-    // Regiones (con etiquetas Regiones)
+    // Regiones con etiquetas del campo "Regiones" (prioridad, centrado)
     fetch('Regiones.geojson')
       .then(res => res.json())
       .then(data => {
         regionesLayer = L.geoJSON(data, {
-          style: { color: "#000", weight: 2, fillOpacity: 0, dashArray: "1,6,1,6" },
-          onEachFeature: function (feature, layer) {
-            if (feature.properties && feature.properties.Regiones) {
-              layer.bindTooltip(String(feature.properties.Regiones), {
+          style: { color: "#000", weight: 2, fillOpacity: 0, dashArray: "1,6,1,6" }
+        }).addTo(map);
+
+        L.geoJSON(data, {
+          onEachFeature: function(feature, layer) {
+            if (!feature || !feature.properties) return;
+            // Extracción robusta: puede venir plano o dentro de tabla HTML
+            var title = getField({ properties: feature.properties }, "Regiones");
+            if (!title) return;
+            var center = layer.getBounds ? layer.getBounds().getCenter() : null;
+            if (!center) return;
+            L.marker(center, { pane: 'labels', interactive: false })
+              .bindTooltip(String(title), {
                 permanent: true,
                 direction: "center",
                 className: "region-label"
-              });
-            }
-          }
-        }).addTo(map);
+              })
+              .addTo(regionesLabelLayer);
+          },
+          style: { opacity: 0, fillOpacity: 0 }
+        });
       });
 
     // Edo_Hgo
@@ -201,6 +232,7 @@
       return dict;
     }
 
+    // Obtener campo plano o extraído de tabla HTML
     function getField(f, fieldName) {
       if (f.properties && f.properties.hasOwnProperty(fieldName)) {
         return f.properties[fieldName];
@@ -220,7 +252,7 @@
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
 
-    // Estilo 2do informe (rangos nuevos, mismos colores)
+    // Estilo 2do informe
     function estiloInversion2(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
@@ -234,7 +266,6 @@
     // Selector con comportamiento toggle + leyendas
     Array.from(radios).forEach(radio => {
       radio.addEventListener('click', function(e) {
-        // Si ya estaba seleccionado, limpiar y volver a mapa base
         if (radio.checked && radio.dataset.selected === "true") {
           limpiarInformes();
           legendDiv.style.display = "none";
@@ -242,14 +273,12 @@
           radio.checked = false;
           radio.dataset.selected = "false";
 
-          // Base layers al frente correspondiente
           municipiosLayer && municipiosLayer.bringToBack();
           regionesLayer && regionesLayer.bringToFront();
           edoLayer && edoLayer.bringToFront();
           return;
         }
 
-        // Marcar selección
         Array.from(radios).forEach(r => r.dataset.selected = "false");
         radio.dataset.selected = "true";
 
@@ -266,7 +295,6 @@
             regionesLayer && regionesLayer.bringToFront();
             edoLayer && edoLayer.bringToFront();
 
-            // Leyenda 1er informe
             legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
             var segmentos1 = [
               { color: "rgb(204,204,204)", label: "Sin inversión" },
@@ -296,7 +324,6 @@
             regionesLayer && regionesLayer.bringToFront();
             edoLayer && edoLayer.bringToFront();
 
-            // Leyenda 2do informe (mismos colores, títulos nuevos)
             legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
             var segmentos2 = [
               { color: "rgb(204,204,204)", label: "Sin inversión" },
@@ -319,8 +346,6 @@
       });
     });
 
-    // Si quieres seleccionar por defecto:
-    // document.querySelector('input[name="mapOption"][value="informe2"]').click();
   </script>
 </body>
 </html>

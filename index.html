@@ -124,39 +124,35 @@
     var regionesLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
     var municipiosLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
 
-    // Municipios con etiquetas CVE_MUN (dirección auto para evitar choque)
-    fetch('Municipios.geojson')
-      .then(res => res.json())
-      .then(data => {
-        municipiosLayer = L.geoJSON(data, {
-          style: { color: "#999", weight: 1, fillOpacity: 0 }
-        }).addTo(map);
+// Municipios con etiquetas CVE_MUN (dirección auto para evitar choque)
+fetch('Municipios.geojson')
+  .then(res => res.json())
+  .then(data => {
+    municipiosLayer = L.geoJSON(data, {
+      style: { color: "#999", weight: 1, fillOpacity: 0 }
+    }).addTo(map);
 
-        // Etiquetas: usar centro del bounds del polígono
-        L.geoJSON(data, {
-          onEachFeature: function(feature, layer) {
-            if (!feature || !feature.properties) return;
-            var val = feature.properties.CVE_MUN;
-            if (val === undefined) return;
-            // Centro del feature
-            var center = layer.getBounds ? layer.getBounds().getCenter() : null;
-            if (!center) return;
-            L.marker(center, {
-  		pane: 'labels',
-  		interactive: false,
-  		icon: L.divIcon({ className: 'empty-icon' })
-	})
-	   .bindTooltip(String(val), {
-  	   permanent: true,
-  	   direction: "auto",
-  	   offset: [10, 0],
-  	   className: "mun-label"
-	})
-	   .addTo(municipiosLabelLayer);
-          },
-          style: { opacity: 0, fillOpacity: 0 } // no afecta, solo para iterar
-        });
-      });
+    // Etiquetas: recorrer geometrías reales para obtener centro
+    L.geoJSON(data).eachLayer(function(layer) {
+      if (!layer.feature || !layer.feature.properties) return;
+      var val = layer.feature.properties.CVE_MUN;
+      if (!val) return;
+      var center = layer.getBounds ? layer.getBounds().getCenter() : null;
+      if (!center) return;
+      L.marker(center, {
+        pane: 'labels',
+        interactive: false,
+        icon: L.divIcon({ className: 'empty-icon' })
+      })
+      .bindTooltip(String(val), {
+        permanent: true,
+        direction: "auto",
+        offset: [10, 0],
+        className: "mun-label"
+      })
+      .addTo(municipiosLabelLayer);
+    });
+  });
 
     // Regiones con etiquetas del campo "Regiones" (prioridad, centrado)
     fetch('Regiones.geojson')

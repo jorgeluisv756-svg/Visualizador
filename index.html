@@ -48,7 +48,7 @@
     #legend {
       margin-top: 10px;
       font-size: 12px;
-      display: none; /* Oculta por defecto */
+      display: none;
     }
     #legend div {
       display: flex;
@@ -77,9 +77,9 @@
   <!-- Panel lateral -->
   <div id="panel">
     <h3>Selecciona mapa</h3>
+    <!-- Importante: ya NO hay opción de "Mapa Base" aquí -->
     <label><input type="radio" name="mapOption" value="informe1"> Tu Experiencia Transforma 1er Informe</label><br>
-    <label><input type="radio" name="mapOption" value="informe2"> Tu Experiencia Transforma 2do Informe</label><br>
-    <label><input type="radio" name="mapOption" value="base" checked> Mapa Base</label>
+    <label><input type="radio" name="mapOption" value="informe2"> Tu Experiencia Transforma 2do Informe</label>
     <div id="legend"><strong>INVERSIÓN</strong></div>
   </div>
 
@@ -90,14 +90,13 @@
   <script>
     var map = L.map('map').setView([20.1, -98.7], 8);
 
-    // Base OSM
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
     var municipiosLayer, regionesLayer, edoLayer;
 
-    // Municipios (gris claro, sin relleno)
+    // Municipios
     fetch('Municipios.geojson')
       .then(res => res.json())
       .then(data => {
@@ -106,34 +105,34 @@
         }).addTo(map);
       });
 
-    // Regiones (borde negro, 2pt, estilo punto-línea-punto)
+    // Regiones (negro, 2pt, punto-línea-punto)
     fetch('Regiones.geojson')
       .then(res => res.json())
       .then(data => {
         regionesLayer = L.geoJSON(data, {
-          style: { 
-            color: "#000", 
-            weight: 2, 
-            fillOpacity: 0, 
-            dashArray: "1,6,1,6" // patrón punto-línea-punto
+          style: {
+            color: "#000",
+            weight: 2,
+            fillOpacity: 0,
+            dashArray: "1,6,1,6"
           }
         }).addTo(map);
       });
 
-    // Estado de Hidalgo (borde rojo, sin relleno)
+    // Edo_Hgo (rojo, sin relleno)
     fetch('Edo_Hgo.geojson')
       .then(res => res.json())
       .then(data => {
         edoLayer = L.geoJSON(data, {
-          style: { 
-            color: "rgb(255,0,0)", 
-            weight: 3, 
-            fillOpacity: 0 
+          style: {
+            color: "rgb(255,0,0)",
+            weight: 3,
+            fillOpacity: 0
           }
         }).addTo(map);
       });
 
-    // Función para estilo según rangos
+    // Estilo por inversión
     function estiloPorInversion(valor) {
       if (valor <= 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 0.7 };
       else if (valor <= 66000) return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 0.7 };
@@ -144,7 +143,7 @@
 
     var informe1Layer, informe2Layer;
 
-    // Cargar GeoJSON de TuExpTrans
+    // Informes
     fetch('TuExpTrans.geojson')
       .then(res => res.json())
       .then(data => {
@@ -156,30 +155,62 @@
         });
       });
 
-    // Manejo de selección
+    // Control de selección
     var legendDiv = document.getElementById('legend');
     var radios = document.getElementsByName('mapOption');
 
+    function limpiarInformes() {
+      if (informe1Layer) map.removeLayer(informe1Layer);
+      if (informe2Layer) map.removeLayer(informe2Layer);
+    }
+
+    function mostrarMapaBase() {
+      if (!map.hasLayer(municipiosLayer)) municipiosLayer.addTo(map);
+      if (!map.hasLayer(regionesLayer)) regionesLayer.addTo(map);
+      if (!map.hasLayer(edoLayer)) edoLayer.addTo(map);
+    }
+
+    function ocultarMapaBase() {
+      if (municipiosLayer) map.removeLayer(municipiosLayer);
+      if (regionesLayer) map.removeLayer(regionesLayer);
+      if (edoLayer) map.removeLayer(edoLayer);
+    }
+
+    // Mostrar el mapa base al cargar (porque no hay selección por defecto)
+    mostrarMapaBase();
+
+    // Cambios de selección
     radios.forEach(radio => {
       radio.addEventListener('change', function(e) {
-        // limpiar capas de informes
-        if (informe1Layer) map.removeLayer(informe1Layer);
-        if (informe2Layer) map.removeLayer(informe2Layer);
+        limpiarInformes();
+        ocultarMapaBase();
 
-        // siempre mantener el mapa base (municipios, regiones, estado)
         if (e.target.value === 'informe1') {
           informe1Layer.addTo(map);
-          legendDiv.style.display = "block"; // mostrar tabla
+          legendDiv.style.display = "block";
         } else if (e.target.value === 'informe2') {
           informe2Layer.addTo(map);
-          legendDiv.style.display = "none"; // ocultar tabla
-        } else {
-          legendDiv.style.display = "none"; // ocultar tabla
+          legendDiv.style.display = "none";
         }
       });
     });
 
-    // Contenido de la tabla (solo se genera una vez)
+    // Si no hay selección (ningún radio marcado), mostrar mapa base
+    // Esto cubre escenarios como limpiar selección por JavaScript futuro o re-render.
+    function asegurarMapaBaseSiNoSeleccion() {
+      const seleccionado = Array.from(radios).some(r => r.checked);
+      if (!seleccionado) {
+        limpiarInformes();
+        mostrarMapaBase();
+        legendDiv.style.display = "none";
+      }
+    }
+
+    // Observa clicks globales y también al cargar
+    document.addEventListener('click', asegurarMapaBaseSiNoSeleccion);
+    window.addEventListener('load', asegurarMapaBaseSiNoSeleccion);
+
+    // Tabla de inversión
     var segmentos = [
       { color: "rgb(204,204,204)", label: "Sin inversión" },
       { color: "rgb(245,230,210)", label: "$1 - $66,000" },

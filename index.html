@@ -10,7 +10,6 @@
     html, body { height: 100%; margin: 0; padding: 0; }
     #map { height: 100%; width: 100%; }
 
-    /* Logo institucional */
     #logo {
       position: absolute;
       top: 10px;
@@ -28,7 +27,6 @@
       max-width: 90vw;
     }
 
-    /* Panel lateral */
     #panel {
       position: absolute;
       top: 10px;
@@ -44,7 +42,6 @@
     }
     #panel h3 { margin-top: 0; font-size: 14px; text-align: center; }
 
-    /* Leyenda solo para 1er informe */
     #legend {
       margin-top: 10px;
       font-size: 12px;
@@ -61,20 +58,13 @@
       height: 20px;
       margin-right: 6px;
     }
-
-    @media (max-width: 600px) {
-      #logo img { width: 200px; }
-      #panel { width: 200px; font-size: 12px; }
-    }
   </style>
 </head>
 <body>
-  <!-- Logo institucional -->
   <div id="logo">
     <img src="https://raw.githubusercontent.com/jorgeluisv756-svg/imagenes_kmz/7c7924c0d0c89c5adaf112d1b8e3fb9db3258400/Logotipo%20armas30%20(1).png" alt="Logo Institucional">
   </div>
 
-  <!-- Panel lateral -->
   <div id="panel">
     <h3>Selecciona mapa</h3>
     <label><input type="radio" name="mapOption" value="informe1"> Tu Experiencia Transforma 1er Informe</label><br>
@@ -82,20 +72,17 @@
     <div id="legend"><strong>INVERSIÓN</strong></div>
   </div>
 
-  <!-- Contenedor del mapa -->
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // 1) Inicializar mapa base OSM
     var map = L.map('map').setView([20.1, -98.7], 8);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    // 2) Capas de mapa base (siempre visibles)
     var municipiosLayer, regionesLayer, edoLayer;
+    var informe1Layer, informe2Layer, informesData;
 
+    // Municipios
     fetch('Municipios.geojson')
       .then(res => res.json())
       .then(data => {
@@ -104,6 +91,7 @@
         }).addTo(map);
       });
 
+    // Regiones
     fetch('Regiones.geojson')
       .then(res => res.json())
       .then(data => {
@@ -112,6 +100,7 @@
         }).addTo(map);
       });
 
+    // Edo_Hgo
     fetch('Edo_Hgo.geojson')
       .then(res => res.json())
       .then(data => {
@@ -120,7 +109,7 @@
         }).addTo(map);
       });
 
-    // 3) Estilo de inversión SOLO para 1er informe
+    // Estilo por inversión (solo 1er informe)
     function estiloPorInversion(valor) {
       valor = Number(valor);
       if (valor <= 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 0.7 };
@@ -130,91 +119,61 @@
       else return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 0.7 };
     }
 
-    // 4) Cargar TuExpTrans EN MEMORIA (no se muestra hasta seleccionar)
-    var informesData = null;
-    var informe1Layer = null;
-    var informe2Layer = null;
-
+    // Cargar TuExpTrans en memoria
     fetch('TuExpTrans.geojson')
       .then(res => res.json())
-      .then(data => { informesData = data; })
-      .catch(err => console.error('Error cargando TuExpTrans.geojson:', err));
+      .then(data => { informesData = data; });
 
-    // 5) Utilidades de visualización
     var legendDiv = document.getElementById('legend');
     var radios = document.getElementsByName('mapOption');
 
     function limpiarInformes() {
-      if (informe1Layer) { map.removeLayer(informe1Layer); }
-      if (informe2Layer) { map.removeLayer(informe2Layer); }
-    }
-    function mostrarMapaBase() {
-      if (municipiosLayer && !map.hasLayer(municipiosLayer)) municipiosLayer.addTo(map);
-      if (regionesLayer && !map.hasLayer(regionesLayer)) regionesLayer.addTo(map);
-      if (edoLayer && !map.hasLayer(edoLayer)) edoLayer.addTo(map);
-    }
-    function ocultarMapaBase() {
-      if (municipiosLayer) map.removeLayer(municipiosLayer);
-      if (regionesLayer) map.removeLayer(regionesLayer);
-      if (edoLayer) map.removeLayer(edoLayer);
+      if (informe1Layer) map.removeLayer(informe1Layer);
+      if (informe2Layer) map.removeLayer(informe2Layer);
     }
 
-    // 6) Eventos de selección
+    // Eventos de selección
     Array.from(radios).forEach(radio => {
       radio.addEventListener('change', function(e) {
-        const seleccion = e.target.value;
         limpiarInformes();
-
-        if (seleccion === 'informe1') {
-          // Ocultar base, aplicar estilo por inversión del 1er informe
-          ocultarMapaBase();
+        if (e.target.value === 'informe1') {
           if (informesData) {
             informe1Layer = L.geoJSON(informesData, {
-              filter: f => typeof f.properties.ExpTra1eIn !== 'undefined',
               style: f => estiloPorInversion(f.properties.ExpTra1eIn)
-            }).addTo(map);
+            });
+            // Agregar encima de Municipios, dejando Regiones y Edo_Hgo activos
+            informe1Layer.addTo(map);
             legendDiv.style.display = "block";
-          } else {
-            console.warn('TuExpTrans aún no cargado.');
           }
-        } else if (seleccion === 'informe2') {
-          // Ocultar base, aplicar estilo del 2do informe (placeholder)
-          ocultarMapaBase();
+        } else if (e.target.value === 'informe2') {
           if (informesData) {
-            // Ajusta este estilo según el diseño para el 2do informe
             informe2Layer = L.geoJSON(informesData, {
-              filter: f => typeof f.properties.ExpTra2dIn !== 'undefined',
-              style: function(f) {
-                // Ejemplo: borde azul y relleno suave proporcional (placeholder)
-                return {
-                  color: "rgb(60,120,200)",
-                  weight: 1,
-                  fillColor: "rgba(60,120,200,0.35)",
-                  fillOpacity: 0.6
-                };
-              }
-            }).addTo(map);
+              style: f => ({
+                color: "rgb(60,120,200)",
+                weight: 1,
+                fillColor: "rgba(60,120,200,0.35)",
+                fillOpacity: 0.6
+              })
+            });
+            informe2Layer.addTo(map);
             legendDiv.style.display = "none";
-          } else {
-            console.warn('TuExpTrans aún no cargado.');
           }
         }
       });
     });
 
-    // 7) Mostrar SIEMPRE el mapa base cuando no haya selección
+    // Mostrar mapa base si no hay selección
     function asegurarMapaBaseSiNoSeleccion() {
       const seleccionado = Array.from(radios).some(r => r.checked);
       if (!seleccionado) {
         limpiarInformes();
-        mostrarMapaBase();
         legendDiv.style.display = "none";
       }
     }
     window.addEventListener('load', asegurarMapaBaseSiNoSeleccion);
     document.addEventListener('click', asegurarMapaBaseSiNoSeleccion);
 
-    // 8) Construir la leyenda (solo 1er informe)
+    // Construir la leyenda
     var segmentos = [
       { color: "rgb(204,204,204)", label: "Sin inversión" },
       { color: "rgb(245,230,210)", label: "$1 - $66,000" },

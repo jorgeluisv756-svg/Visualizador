@@ -109,16 +109,6 @@
         }).addTo(map);
       });
 
-    // Estilo por inversión
-    function estiloPorInversion(valor) {
-      valor = Number(valor);
-      if (valor <= 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 0.7 };
-      else if (valor <= 66000) return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 0.7 };
-      else if (valor <= 126000) return { fillColor: "rgb(225,200,150)", color: "#333", weight: 1, fillOpacity: 0.7 };
-      else if (valor <= 240000) return { fillColor: "rgb(180,150,100)", color: "#333", weight: 1, fillOpacity: 0.7 };
-      else return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 0.7 };
-    }
-
     // Cargar TuExpTrans en memoria
     fetch('TuExpTrans.geojson')
       .then(res => res.json())
@@ -139,7 +129,15 @@
         if (e.target.value === 'informe1') {
           if (informesData) {
             informe1Layer = L.geoJSON(informesData, {
-              style: f => estiloPorInversion(Number(f.properties.ExpTra1eIn))
+              style: function(f) {
+                let valor = Number(f.properties.ExpTra1eIn);
+                if (valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 0.7 };
+                else if (valor >= 1 && valor <= 66000) return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 0.7 };
+                else if (valor >= 66001 && valor <= 126000) return { fillColor: "rgb(225,200,150)", color: "#333", weight: 1, fillOpacity: 0.7 };
+                else if (valor >= 126001 && valor <= 240000) return { fillColor: "rgb(180,150,100)", color: "#333", weight: 1, fillOpacity: 0.7 };
+                else if (valor >= 240001 && valor <= 1122000) return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 0.7 };
+                else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 0.7 };
+              }
             }).addTo(map);
 
             // Orden: Municipios → TuExpTrans → Regiones → Edo_Hgo
@@ -153,7 +151,12 @@
         } else if (e.target.value === 'informe2') {
           if (informesData) {
             informe2Layer = L.geoJSON(informesData, {
-              style: f => estiloPorInversion(Number(f.properties.ExpTra2dIn))
+              style: f => ({
+                color: "rgb(60,120,200)",
+                weight: 1,
+                fillColor: "rgba(60,120,200,0.35)",
+                fillOpacity: 0.6
+              })
             }).addTo(map);
 
             municipiosLayer.bringToBack();

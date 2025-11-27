@@ -10,7 +10,7 @@
     html, body { height: 100%; margin: 0; padding: 0; }
     #map { height: 100%; width: 100%; }
 
-    /* Logo institucional */
+    /* Logo institucional siempre arriba con fondo tenue */
     #logo {
       position: absolute;
       top: 10px;
@@ -44,11 +44,11 @@
     }
     #panel h3 { margin-top: 0; font-size: 14px; text-align: center; }
 
-    /* Tabla de leyenda */
+    /* Leyenda */
     #legend {
       margin-top: 10px;
       font-size: 12px;
-      display: none;
+      display: none; /* visible solo con 1er informe */
     }
     #legend div {
       display: flex;
@@ -77,7 +77,6 @@
   <!-- Panel lateral -->
   <div id="panel">
     <h3>Selecciona mapa</h3>
-    <!-- Importante: ya NO hay opción de "Mapa Base" aquí -->
     <label><input type="radio" name="mapOption" value="informe1"> Tu Experiencia Transforma 1er Informe</label><br>
     <label><input type="radio" name="mapOption" value="informe2"> Tu Experiencia Transforma 2do Informe</label>
     <div id="legend"><strong>INVERSIÓN</strong></div>
@@ -88,15 +87,16 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
+    // Inicializar mapa
     var map = L.map('map').setView([20.1, -98.7], 8);
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
+    // Capas base
     var municipiosLayer, regionesLayer, edoLayer;
 
-    // Municipios
+    // Municipios (gris claro, sin relleno)
     fetch('Municipios.geojson')
       .then(res => res.json())
       .then(data => {
@@ -132,7 +132,7 @@
         }).addTo(map);
       });
 
-    // Estilo por inversión
+    // Segmentación por inversión (aplica a 1er y 2do informe)
     function estiloPorInversion(valor) {
       if (valor <= 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 0.7 };
       else if (valor <= 66000) return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 0.7 };
@@ -141,21 +141,37 @@
       else return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 0.7 };
     }
 
-    var informe1Layer, informe2Layer;
-
     // Informes
+    var informe1Layer, informe2Layer;
+    var informesData; // cache de TuExpTrans
+
+    // Cargar TuExpTrans una sola vez
     fetch('TuExpTrans.geojson')
       .then(res => res.json())
-      .then(data => {
-        informe1Layer = L.geoJSON(data, {
-          style: f => estiloPorInversion(f.properties.ExpTra1eIn)
-        });
-        informe2Layer = L.geoJSON(data, {
-          style: f => estiloPorInversion(f.properties.ExpTra2dIn)
-        });
-      });
+      .then(data => { informesData = data; })
+      .catch(err => console.error('Error cargando TuExpTrans.geojson:', err));
 
-    // Control de selección
+    // Crear capas de informes bajo demanda
+    function crearInforme1() {
+      if (!informesData) return;
+      if (informe1Layer) map.removeLayer(informe1Layer);
+      informe1Layer = L.geoJSON(informesData, {
+        // Filtra si necesitas excluir features sin dato (opcional)
+        filter: f => typeof f.properties.ExpTra1eIn === 'number',
+        style: f => estiloPorInversion(f.properties.ExpTra1eIn)
+      });
+    }
+
+    function crearInforme2() {
+      if (!informesData) return;
+      if (informe2Layer) map.removeLayer(informe2Layer);
+      informe2Layer = L.geoJSON(informesData, {
+        filter: f => typeof f.properties.ExpTra2dIn === 'number',
+        style: f => estiloPorInversion(f.properties.ExpTra2dIn)
+      });
+    }
+
+    // Utilidades de visualización
     var legendDiv = document.getElementById('legend');
     var radios = document.getElementsByName('mapOption');
 
@@ -165,9 +181,9 @@
     }
 
     function mostrarMapaBase() {
-      if (!map.hasLayer(municipiosLayer)) municipiosLayer.addTo(map);
-      if (!map.hasLayer(regionesLayer)) regionesLayer.addTo(map);
-      if (!map.hasLayer(edoLayer)) edoLayer.addTo(map);
+      if (!map.hasLayer(municipiosLayer) && municipiosLayer) municipiosLayer.addTo(map);
+      if (!map.hasLayer(regionesLayer) && regionesLayer) regionesLayer.addTo(map);
+      if (!map.hasLayer(edoLayer) && edoLayer) edoLayer.addTo(map);
     }
 
     function ocultarMapaBase() {
@@ -176,27 +192,29 @@
       if (edoLayer) map.removeLayer(edoLayer);
     }
 
-    // Mostrar el mapa base al cargar (porque no hay selección por defecto)
+    // Mostrar mapa base al inicio
     mostrarMapaBase();
 
-    // Cambios de selección
-    radios.forEach(radio => {
+    // Eventos de selección
+    Array.from(radios).forEach(radio => {
       radio.addEventListener('change', function(e) {
+        const v = e.target.value;
         limpiarInformes();
         ocultarMapaBase();
 
-        if (e.target.value === 'informe1') {
-          informe1Layer.addTo(map);
+        if (v === 'informe1') {
+          if (!informe1Layer) crearInforme1();
+          if (informe1Layer) informe1Layer.addTo(map);
           legendDiv.style.display = "block";
-        } else if (e.target.value === 'informe2') {
-          informe2Layer.addTo(map);
+        } else if (v === 'informe2') {
+          if (!informe2Layer) crearInforme2();
+          if (informe2Layer) informe2Layer.addTo(map);
           legendDiv.style.display = "none";
         }
       });
     });
 
-    // Si no hay selección (ningún radio marcado), mostrar mapa base
-    // Esto cubre escenarios como limpiar selección por JavaScript futuro o re-render.
+    // Asegurar que si no hay selección se muestre el mapa base
     function asegurarMapaBaseSiNoSeleccion() {
       const seleccionado = Array.from(radios).some(r => r.checked);
       if (!seleccionado) {
@@ -205,12 +223,10 @@
         legendDiv.style.display = "none";
       }
     }
-
-    // Observa clicks globales y también al cargar
-    document.addEventListener('click', asegurarMapaBaseSiNoSeleccion);
     window.addEventListener('load', asegurarMapaBaseSiNoSeleccion);
+    document.addEventListener('click', asegurarMapaBaseSiNoSeleccion);
 
-    // Tabla de inversión
+    // Construir la leyenda de INVERSIÓN (1er informe)
     var segmentos = [
       { color: "rgb(204,204,204)", label: "Sin inversión" },
       { color: "rgb(245,230,210)", label: "$1 - $66,000" },

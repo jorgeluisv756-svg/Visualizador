@@ -21,7 +21,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
     #logo img {
-      width: 420px;
+      width: 360px;
       height: auto;
       display: block;
       max-width: 90vw;
@@ -59,23 +59,23 @@
       margin-right: 6px;
     }
 
-   .region-label {
-     font-size: 13px;
-     font-weight: bold;
-     color: #000;
-     text-align: center;
-     background: rgba(255,255,255,0.6); /* fondo semitransparente */
-     padding: 2px 4px;
-     border-radius: 3px;
+    /* Etiquetas */
+    .region-label {
+      font-size: 13px;
+      font-weight: bold;
+      color: #000;
+      text-align: center;
+      background: rgba(255,255,255,0.6);
+      padding: 2px 4px;
+      border-radius: 3px;
     }
-
-   .mun-label {
-     font-size: 10px;
-     color: #333;
-     text-align: center;
-     background: rgba(255,255,255,0.6); /* fondo semitransparente */
-     padding: 1px 3px;
-     border-radius: 3px;
+    .mun-label {
+      font-size: 10px;
+      color: #333;
+      text-align: center;
+      background: rgba(255,255,255,0.6);
+      padding: 1px 3px;
+      border-radius: 3px;
     }
 
     @media (max-width: 600px) {
@@ -110,43 +110,43 @@
     var municipiosLayer, regionesLayer, edoLayer;
     var informe1Layer, informe2Layer, informesData;
 
-    // Municipios (primera capa con etiquetas)
+    // Municipios (con etiquetas CVE_MUN)
     fetch('Municipios.geojson')
-       .then(res => res.json())
-       .then(data => {
-         municipiosLayer = L.geoJSON(data, {
-      style: { color: "#999", weight: 1, fillOpacity: 0 },
-      onEachFeature: function (feature, layer) {
-        if (feature.properties && feature.properties.CVE_MUN) {
-          layer.bindTooltip(feature.properties.CVE_MUN, {
-            permanent: true,
-            direction: "auto", // se ajusta si hay conflicto
-            className: "mun-label"
-          });
-        }
-      }
-    }).addTo(map);
-  });
+      .then(res => res.json())
+      .then(data => {
+        municipiosLayer = L.geoJSON(data, {
+          style: { color: "#999", weight: 1, fillOpacity: 0 },
+          onEachFeature: function (feature, layer) {
+            if (feature.properties && feature.properties.CVE_MUN) {
+              layer.bindTooltip(String(feature.properties.CVE_MUN), {
+                permanent: true,
+                direction: "auto", // se ajusta si hay conflicto
+                className: "mun-label"
+              });
+            }
+          }
+        }).addTo(map);
+      });
 
-    // Regiones (tercera capa con etiquetas)
+    // Regiones (con etiquetas Regiones)
     fetch('Regiones.geojson')
-       .then(res => res.json())
-       .then(data => {
+      .then(res => res.json())
+      .then(data => {
         regionesLayer = L.geoJSON(data, {
           style: { color: "#000", weight: 2, fillOpacity: 0, dashArray: "1,6,1,6" },
-      onEachFeature: function (feature, layer) {
-        if (feature.properties && feature.properties.Regiones) {
-          layer.bindTooltip(feature.properties.Regiones, {
-            permanent: true,
-            direction: "center",
-            className: "region-label"
-          });
-        }
-      }
-    }).addTo(map);
-  });
+          onEachFeature: function (feature, layer) {
+            if (feature.properties && feature.properties.Regiones) {
+              layer.bindTooltip(String(feature.properties.Regiones), {
+                permanent: true,
+                direction: "center",
+                className: "region-label"
+              });
+            }
+          }
+        }).addTo(map);
+      });
 
-    // Edo_Hgo (última capa)
+    // Edo_Hgo
     fetch('Edo_Hgo.geojson')
       .then(res => res.json())
       .then(data => {
@@ -177,18 +177,13 @@
     }
 
     // Utilidad: construir diccionario desde tabla HTML dentro de properties
-    // Recorre todas las propiedades string con <td> y arma pares clave→valor.
     function propsFromHtmlTable(properties) {
       var dict = {};
-
-      // Copiar propiedades ya planas
       for (var k in properties) {
         if (!properties.hasOwnProperty(k)) continue;
         var val = properties[k];
         if (typeof val !== 'string') dict[k] = val;
       }
-
-      // Parsear bloques HTML con tabla
       for (var key in properties) {
         if (!properties.hasOwnProperty(key)) continue;
         var html = properties[key];
@@ -206,7 +201,6 @@
       return dict;
     }
 
-    // Obtener campo robustamente (plano o extraído de tabla)
     function getField(f, fieldName) {
       if (f.properties && f.properties.hasOwnProperty(fieldName)) {
         return f.properties[fieldName];
@@ -215,131 +209,118 @@
       return dict[fieldName];
     }
 
-    // Estilo por inversión del 1er informe (rangos originales)
+    // Estilo 1er informe
     function estiloInversion1(valorNum) {
       var valor = toNumberSafe(valorNum);
-      if (isNaN(valor) || valor === 0) {
-        return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
-      } else if (valor >= 1 && valor <= 66000) {
-        return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 1 };
-      } else if (valor >= 66001 && valor <= 126000) {
-        return { fillColor: "rgb(225,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
-      } else if (valor >= 126001 && valor <= 240000) {
-        return { fillColor: "rgb(180,150,100)", color: "#333", weight: 1, fillOpacity: 1 };
-      } else if (valor >= 240001 && valor <= 1122000) {
-        return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 1 };
-      } else {
-        return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
-      }
+      if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 66000) return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 66001 && valor <= 126000) return { fillColor: "rgb(225,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 126001 && valor <= 240000) return { fillColor: "rgb(180,150,100)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 240001 && valor <= 1122000) return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 1 };
+      else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
 
-    // Estilo por inversión del 2do informe (rangos nuevos)
+    // Estilo 2do informe (rangos nuevos, mismos colores)
     function estiloInversion2(valorNum) {
       var valor = toNumberSafe(valorNum);
-      if (isNaN(valor) || valor === 0) {
-        return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
-      } else if (valor >= 1 && valor <= 247500) {
-        return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 1 };
-      } else if (valor >= 247501 && valor <= 517500) {
-        return { fillColor: "rgb(225,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
-      } else if (valor >= 517501 && valor <= 1200000) {
-        return { fillColor: "rgb(180,150,100)", color: "#333", weight: 1, fillOpacity: 1 };
-      } else if (valor >= 1200001 && valor <= 3180000) {
-        return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 1 };
-      } else {
-        return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
-      }
+      if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 247500) return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 247501 && valor <= 517500) return { fillColor: "rgb(225,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 517501 && valor <= 1200000) return { fillColor: "rgb(180,150,100)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1200001 && valor <= 3180000) return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 1 };
+      else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
 
-    // Render según selección
-   Array.from(radios).forEach(radio => {
-  radio.addEventListener('click', function(e) {
-    // Si ya estaba seleccionado, lo desmarcamos y volvemos al mapa base
-    if (radio.checked && radio.dataset.selected === "true") {
-      limpiarInformes();
-      legendDiv.style.display = "none";
-      legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
-      radio.checked = false;
-      radio.dataset.selected = "false";
+    // Selector con comportamiento toggle + leyendas
+    Array.from(radios).forEach(radio => {
+      radio.addEventListener('click', function(e) {
+        // Si ya estaba seleccionado, limpiar y volver a mapa base
+        if (radio.checked && radio.dataset.selected === "true") {
+          limpiarInformes();
+          legendDiv.style.display = "none";
+          legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
+          radio.checked = false;
+          radio.dataset.selected = "false";
 
-      // Reordenar capas base
-      municipiosLayer && municipiosLayer.bringToBack();
-      regionesLayer && regionesLayer.bringToFront();
-      edoLayer && edoLayer.bringToFront();
-      return;
-    }
+          // Base layers al frente correspondiente
+          municipiosLayer && municipiosLayer.bringToBack();
+          regionesLayer && regionesLayer.bringToFront();
+          edoLayer && edoLayer.bringToFront();
+          return;
+        }
 
-    // Marcar este radio como seleccionado
-    Array.from(radios).forEach(r => r.dataset.selected = "false");
-    radio.dataset.selected = "true";
+        // Marcar selección
+        Array.from(radios).forEach(r => r.dataset.selected = "false");
+        radio.dataset.selected = "true";
 
-    limpiarInformes();
+        limpiarInformes();
 
-    if (e.target.value === 'informe1') {
-      if (informesData) {
-        informe1Layer = L.geoJSON(informesData, {
-          style: f => estiloInversion1(getField(f, "ExpTra1eIn"))
-        }).addTo(map);
+        if (e.target.value === 'informe1') {
+          if (informesData) {
+            informe1Layer = L.geoJSON(informesData, {
+              style: f => estiloInversion1(getField(f, "ExpTra1eIn"))
+            }).addTo(map);
 
-        municipiosLayer && municipiosLayer.bringToBack();
-        informe1Layer && informe1Layer.bringToFront();
-        regionesLayer && regionesLayer.bringToFront();
-        edoLayer && edoLayer.bringToFront();
+            municipiosLayer && municipiosLayer.bringToBack();
+            informe1Layer && informe1Layer.bringToFront();
+            regionesLayer && regionesLayer.bringToFront();
+            edoLayer && edoLayer.bringToFront();
 
-        // Leyenda 1er informe
-        legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
-        var segmentos1 = [
-          { color: "rgb(204,204,204)", label: "Sin inversión" },
-          { color: "rgb(245,230,210)", label: "$1 - $66,000" },
-          { color: "rgb(225,200,150)", label: "$66,001 - $126,000" },
-          { color: "rgb(180,150,100)", label: "$126,001 - $240,000" },
-          { color: "rgb(137,112,68)", label: "$240,001 - $1,122,000" }
-        ];
-        legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
-        segmentos1.forEach(s => {
-          var row = document.createElement('div');
-          var box = document.createElement('span');
-          box.style.background = s.color;
-          row.appendChild(box);
-          row.appendChild(document.createTextNode(s.label));
-          legendDiv.appendChild(row);
-        });
-        legendDiv.style.display = "block";
-      }
-    } else if (e.target.value === 'informe2') {
-      if (informesData) {
-        informe2Layer = L.geoJSON(informesData, {
-          style: f => estiloInversion2(getField(f, "ExpTra2dIn"))
-        }).addTo(map);
+            // Leyenda 1er informe
+            legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
+            var segmentos1 = [
+              { color: "rgb(204,204,204)", label: "Sin inversión" },
+              { color: "rgb(245,230,210)", label: "$1 - $66,000" },
+              { color: "rgb(225,200,150)", label: "$66,001 - $126,000" },
+              { color: "rgb(180,150,100)", label: "$126,001 - $240,000" },
+              { color: "rgb(137,112,68)", label: "$240,001 - $1,122,000" }
+            ];
+            segmentos1.forEach(s => {
+              var row = document.createElement('div');
+              var box = document.createElement('span');
+              box.style.background = s.color;
+              row.appendChild(box);
+              row.appendChild(document.createTextNode(s.label));
+              legendDiv.appendChild(row);
+            });
+            legendDiv.style.display = "block";
+          }
+        } else if (e.target.value === 'informe2') {
+          if (informesData) {
+            informe2Layer = L.geoJSON(informesData, {
+              style: f => estiloInversion2(getField(f, "ExpTra2dIn"))
+            }).addTo(map);
 
-        municipiosLayer && municipiosLayer.bringToBack();
-        informe2Layer && informe2Layer.bringToFront();
-        regionesLayer && regionesLayer.bringToFront();
-        edoLayer && edoLayer.bringToFront();
+            municipiosLayer && municipiosLayer.bringToBack();
+            informe2Layer && informe2Layer.bringToFront();
+            regionesLayer && regionesLayer.bringToFront();
+            edoLayer && edoLayer.bringToFront();
 
-        // Leyenda 2do informe
-        legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
-        var segmentos2 = [
-          { color: "rgb(204,204,204)", label: "Sin inversión" },
-          { color: "rgb(245,230,210)", label: "$1 - $247,500" },
-          { color: "rgb(225,200,150)", label: "$247,501 - $517,500" },
-          { color: "rgb(180,150,100)", label: "$517,501 - $1,200,000" },
-          { color: "rgb(137,112,68)", label: "$1,200,001 - $3,180,000" }
-        ];
-        segmentos2.forEach(s => {
-          var row = document.createElement('div');
-          var box = document.createElement('span');
-          box.style.background = s.color;
-          row.appendChild(box);
-          row.appendChild(document.createTextNode(s.label));
-          legendDiv.appendChild(row);
-        });
-        legendDiv.style.display = "block";
-      }
-    }
-  });
-});
+            // Leyenda 2do informe (mismos colores, títulos nuevos)
+            legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
+            var segmentos2 = [
+              { color: "rgb(204,204,204)", label: "Sin inversión" },
+              { color: "rgb(245,230,210)", label: "$1 - $247,500" },
+              { color: "rgb(225,200,150)", label: "$247,501 - $517,500" },
+              { color: "rgb(180,150,100)", label: "$517,501 - $1,200,000" },
+              { color: "rgb(137,112,68)", label: "$1,200,001 - $3,180,000" }
+            ];
+            segmentos2.forEach(s => {
+              var row = document.createElement('div');
+              var box = document.createElement('span');
+              box.style.background = s.color;
+              row.appendChild(box);
+              row.appendChild(document.createTextNode(s.label));
+              legendDiv.appendChild(row);
+            });
+            legendDiv.style.display = "block";
+          }
+        }
+      });
+    });
 
+    // Si quieres seleccionar por defecto:
+    // document.querySelector('input[name="mapOption"][value="informe2"]').click();
   </script>
 </body>
 </html>

@@ -10,7 +10,7 @@
     html, body { height: 100%; margin: 0; padding: 0; }
     #map { height: 100%; width: 100%; }
 
-    /* Logo institucional siempre arriba con fondo tenue */
+    /* Logo institucional */
     #logo {
       position: absolute;
       top: 10px;
@@ -39,16 +39,16 @@
       border-radius: 6px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       font-family: Arial, sans-serif;
-      width: 240px;
+      width: 260px;
       max-width: 90vw;
     }
     #panel h3 { margin-top: 0; font-size: 14px; text-align: center; }
 
-    /* Leyenda */
+    /* Leyenda solo para 1er informe */
     #legend {
       margin-top: 10px;
       font-size: 12px;
-      display: none; /* visible solo con 1er informe */
+      display: none;
     }
     #legend div {
       display: flex;
@@ -64,7 +64,7 @@
 
     @media (max-width: 600px) {
       #logo img { width: 200px; }
-      #panel { width: 180px; font-size: 12px; }
+      #panel { width: 200px; font-size: 12px; }
     }
   </style>
 </head>
@@ -87,16 +87,15 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // Inicializar mapa
+    // 1) Inicializar mapa base OSM
     var map = L.map('map').setView([20.1, -98.7], 8);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Capas base
+    // 2) Capas de mapa base (siempre visibles)
     var municipiosLayer, regionesLayer, edoLayer;
 
-    // Municipios (gris claro, sin relleno)
     fetch('Municipios.geojson')
       .then(res => res.json())
       .then(data => {
@@ -105,35 +104,25 @@
         }).addTo(map);
       });
 
-    // Regiones (negro, 2pt, punto-línea-punto)
     fetch('Regiones.geojson')
       .then(res => res.json())
       .then(data => {
         regionesLayer = L.geoJSON(data, {
-          style: {
-            color: "#000",
-            weight: 2,
-            fillOpacity: 0,
-            dashArray: "1,6,1,6"
-          }
+          style: { color: "#000", weight: 2, fillOpacity: 0, dashArray: "1,6,1,6" }
         }).addTo(map);
       });
 
-    // Edo_Hgo (rojo, sin relleno)
     fetch('Edo_Hgo.geojson')
       .then(res => res.json())
       .then(data => {
         edoLayer = L.geoJSON(data, {
-          style: {
-            color: "rgb(255,0,0)",
-            weight: 3,
-            fillOpacity: 0
-          }
+          style: { color: "rgb(255,0,0)", weight: 3, fillOpacity: 0 }
         }).addTo(map);
       });
 
-    // Segmentación por inversión (aplica a 1er y 2do informe)
+    // 3) Estilo de inversión SOLO para 1er informe
     function estiloPorInversion(valor) {
+      valor = Number(valor);
       if (valor <= 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 0.7 };
       else if (valor <= 66000) return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 0.7 };
       else if (valor <= 126000) return { fillColor: "rgb(225,200,150)", color: "#333", weight: 1, fillOpacity: 0.7 };
@@ -141,80 +130,79 @@
       else return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 0.7 };
     }
 
-    // Informes
-    var informe1Layer, informe2Layer;
-    var informesData; // cache de TuExpTrans
+    // 4) Cargar TuExpTrans EN MEMORIA (no se muestra hasta seleccionar)
+    var informesData = null;
+    var informe1Layer = null;
+    var informe2Layer = null;
 
-    // Cargar TuExpTrans una sola vez
     fetch('TuExpTrans.geojson')
       .then(res => res.json())
       .then(data => { informesData = data; })
       .catch(err => console.error('Error cargando TuExpTrans.geojson:', err));
 
-    // Crear capas de informes bajo demanda
-    function crearInforme1() {
-      if (!informesData) return;
-      if (informe1Layer) map.removeLayer(informe1Layer);
-      informe1Layer = L.geoJSON(informesData, {
-        // Filtra si necesitas excluir features sin dato (opcional)
-        filter: f => typeof f.properties.ExpTra1eIn === 'number',
-        style: f => estiloPorInversion(f.properties.ExpTra1eIn)
-      });
-    }
-
-    function crearInforme2() {
-      if (!informesData) return;
-      if (informe2Layer) map.removeLayer(informe2Layer);
-      informe2Layer = L.geoJSON(informesData, {
-        filter: f => typeof f.properties.ExpTra2dIn === 'number',
-        style: f => estiloPorInversion(f.properties.ExpTra2dIn)
-      });
-    }
-
-    // Utilidades de visualización
+    // 5) Utilidades de visualización
     var legendDiv = document.getElementById('legend');
     var radios = document.getElementsByName('mapOption');
 
     function limpiarInformes() {
-      if (informe1Layer) map.removeLayer(informe1Layer);
-      if (informe2Layer) map.removeLayer(informe2Layer);
+      if (informe1Layer) { map.removeLayer(informe1Layer); }
+      if (informe2Layer) { map.removeLayer(informe2Layer); }
     }
-
     function mostrarMapaBase() {
-      if (!map.hasLayer(municipiosLayer) && municipiosLayer) municipiosLayer.addTo(map);
-      if (!map.hasLayer(regionesLayer) && regionesLayer) regionesLayer.addTo(map);
-      if (!map.hasLayer(edoLayer) && edoLayer) edoLayer.addTo(map);
+      if (municipiosLayer && !map.hasLayer(municipiosLayer)) municipiosLayer.addTo(map);
+      if (regionesLayer && !map.hasLayer(regionesLayer)) regionesLayer.addTo(map);
+      if (edoLayer && !map.hasLayer(edoLayer)) edoLayer.addTo(map);
     }
-
     function ocultarMapaBase() {
       if (municipiosLayer) map.removeLayer(municipiosLayer);
       if (regionesLayer) map.removeLayer(regionesLayer);
       if (edoLayer) map.removeLayer(edoLayer);
     }
 
-    // Mostrar mapa base al inicio
-    mostrarMapaBase();
-
-    // Eventos de selección
+    // 6) Eventos de selección
     Array.from(radios).forEach(radio => {
       radio.addEventListener('change', function(e) {
-        const v = e.target.value;
+        const seleccion = e.target.value;
         limpiarInformes();
-        ocultarMapaBase();
 
-        if (v === 'informe1') {
-          if (!informe1Layer) crearInforme1();
-          if (informe1Layer) informe1Layer.addTo(map);
-          legendDiv.style.display = "block";
-        } else if (v === 'informe2') {
-          if (!informe2Layer) crearInforme2();
-          if (informe2Layer) informe2Layer.addTo(map);
-          legendDiv.style.display = "none";
+        if (seleccion === 'informe1') {
+          // Ocultar base, aplicar estilo por inversión del 1er informe
+          ocultarMapaBase();
+          if (informesData) {
+            informe1Layer = L.geoJSON(informesData, {
+              filter: f => typeof f.properties.ExpTra1eIn !== 'undefined',
+              style: f => estiloPorInversion(f.properties.ExpTra1eIn)
+            }).addTo(map);
+            legendDiv.style.display = "block";
+          } else {
+            console.warn('TuExpTrans aún no cargado.');
+          }
+        } else if (seleccion === 'informe2') {
+          // Ocultar base, aplicar estilo del 2do informe (placeholder)
+          ocultarMapaBase();
+          if (informesData) {
+            // Ajusta este estilo según el diseño para el 2do informe
+            informe2Layer = L.geoJSON(informesData, {
+              filter: f => typeof f.properties.ExpTra2dIn !== 'undefined',
+              style: function(f) {
+                // Ejemplo: borde azul y relleno suave proporcional (placeholder)
+                return {
+                  color: "rgb(60,120,200)",
+                  weight: 1,
+                  fillColor: "rgba(60,120,200,0.35)",
+                  fillOpacity: 0.6
+                };
+              }
+            }).addTo(map);
+            legendDiv.style.display = "none";
+          } else {
+            console.warn('TuExpTrans aún no cargado.');
+          }
         }
       });
     });
 
-    // Asegurar que si no hay selección se muestre el mapa base
+    // 7) Mostrar SIEMPRE el mapa base cuando no haya selección
     function asegurarMapaBaseSiNoSeleccion() {
       const seleccionado = Array.from(radios).some(r => r.checked);
       if (!seleccionado) {
@@ -226,7 +214,7 @@
     window.addEventListener('load', asegurarMapaBaseSiNoSeleccion);
     document.addEventListener('click', asegurarMapaBaseSiNoSeleccion);
 
-    // Construir la leyenda de INVERSIÓN (1er informe)
+    // 8) Construir la leyenda (solo 1er informe)
     var segmentos = [
       { color: "rgb(204,204,204)", label: "Sin inversión" },
       { color: "rgb(245,230,210)", label: "$1 - $66,000" },

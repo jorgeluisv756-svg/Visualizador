@@ -21,7 +21,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
     #logo img {
-      width: 360px;
+      width: 340px;
       height: auto;
       display: block;
       max-width: 90vw;
@@ -91,7 +91,7 @@
     var municipiosLayer, regionesLayer, edoLayer;
     var informe1Layer, informe2Layer, informesData;
 
-    // Municipios (1a capa)
+    // Municipios (primera capa)
     fetch('Municipios.geojson')
       .then(res => res.json())
       .then(data => {
@@ -100,7 +100,7 @@
         }).addTo(map);
       });
 
-    // Regiones (3a capa)
+    // Regiones (tercera capa)
     fetch('Regiones.geojson')
       .then(res => res.json())
       .then(data => {
@@ -131,23 +131,58 @@
       if (informe2Layer) { map.removeLayer(informe2Layer); informe2Layer = null; }
     }
 
-    // Utilidad: extraer valor desde HTML incrustado en properties
-    // - Tolera espacios, saltos de línea y comillas
-    // - Remueve comas de miles y simbolos extra
-    function extraerValor(properties, campo) {
-      var raw = JSON.stringify(properties);
-      var regex = new RegExp(campo + "\\s*<\\/td>\\s*<td>\\s*([^<]+)\\s*<\\/td>", "i");
-      var match = raw.match(regex);
-      if (!match) return NaN;
-      var limpio = match[1]
-        .replace(/[,]/g, "")     // quitar comas de miles
-        .replace(/[^\d.\-]/g, ""); // quitar símbolos no numéricos
-      var valor = parseFloat(limpio);
-      return isNaN(valor) ? NaN : valor;
+    // Utilidad: convierte cualquier valor a número eliminando comas y símbolos
+    function toNumberSafe(x) {
+      if (x === null || x === undefined) return NaN;
+      var s = String(x).replace(/[,]/g, '').replace(/[^\d.\-]/g, '');
+      var v = parseFloat(s);
+      return isNaN(v) ? NaN : v;
+    }
+
+    // Utilidad: construir diccionario desde tabla HTML dentro de properties
+    // Busca en todas las propiedades que sean strings con etiquetas HTML.
+    function propsFromHtmlTable(properties) {
+      var dict = {};
+
+      // 1) Si ya vienen planos, cópialos
+      for (var k in properties) {
+        if (!properties.hasOwnProperty(k)) continue;
+        var val = properties[k];
+        if (typeof val !== 'string') dict[k] = val;
+      }
+
+      // 2) Parsear cada propiedad string que contenga <td>
+      for (var key in properties) {
+        if (!properties.hasOwnProperty(key)) continue;
+        var html = properties[key];
+        if (typeof html === 'string' && html.indexOf('<td') !== -1) {
+          var container = document.createElement('div');
+          container.innerHTML = html;
+          var tds = container.querySelectorAll('td');
+          for (var i = 0; i + 1 < tds.length; i += 2) {
+            var name = tds[i].textContent.trim();
+            var value = tds[i + 1].textContent.trim();
+            dict[name] = value;
+          }
+        }
+      }
+      return dict;
+    }
+
+    // Obtener campo robustamente (plano o extraído de tabla)
+    function getField(f, fieldName) {
+      // directo
+      if (f.properties && f.properties.hasOwnProperty(fieldName)) {
+        return f.properties[fieldName];
+      }
+      // extraído
+      var dict = propsFromHtmlTable(f.properties || {});
+      return dict[fieldName];
     }
 
     // Estilo por inversión del 1er informe (rangos exactos)
-    function estiloInversion1(valor) {
+    function estiloInversion1(valorNum) {
+      var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) {
         return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 0.7 };
       } else if (valor >= 1 && valor <= 66000) {
@@ -172,7 +207,7 @@
           if (informesData) {
             informe1Layer = L.geoJSON(informesData, {
               style: function(f) {
-                var valor = extraerValor(f.properties, "ExpTra1eIn");
+                var valor = getField(f, "ExpTra1eIn");
                 return estiloInversion1(valor);
               }
             }).addTo(map);
@@ -189,10 +224,11 @@
           if (informesData) {
             informe2Layer = L.geoJSON(informesData, {
               style: function(f) {
-                var valor = extraerValor(f.properties, "ExpTra2dIn");
-                // Estilo genérico (puedes definir rangos propios aquí)
+                var valor = getField(f, "ExpTra2dIn");
+                var v = toNumberSafe(valor);
+                // Estilo genérico; si quieres rangos del 2do informe, pásamelos y los integro
                 return {
-                  fillColor: "rgba(60,120,200,0.35)",
+                  fillColor: isNaN(v) ? "#ccc" : "rgba(60,120,200,0.35)",
                   color: "rgb(60,120,200)",
                   weight: 1,
                   fillOpacity: 0.6

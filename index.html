@@ -124,12 +124,12 @@
     var regionesLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
     var municipiosLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
 
-    // Municipios con etiquetas CVE_MUN (dirección auto para evitar choque)
+    // Municipios con etiquetas CVE_MUN
     fetch('Municipios.geojson')
       .then(res => res.json())
       .then(data => {
         municipiosLayer = L.geoJSON(data, {
-           style: { color: "#999", weight: 1, fillOpacity: 0 }
+           style: { color: "#000", weight: 1, fillOpacity: 0, dashArray: "1,6,1,6" }
          }).addTo(map);
 
          L.geoJSON(data, {
@@ -144,8 +144,7 @@
         })
              .bindTooltip(String(label), {
              permanent: true,
-             direction: "auto",
-             offset: [10, 0],
+             direction: "center",
              className: "mun-label"
         })
          .addTo(municipiosLabelLayer);
@@ -165,7 +164,6 @@
         L.geoJSON(data, {
           onEachFeature: function(feature, layer) {
             if (!feature || !feature.properties) return;
-            // Extracción robusta: puede venir plano o dentro de tabla HTML
             var title = getField({ properties: feature.properties }, "Regiones");
             if (!title) return;
             var center = layer.getBounds ? layer.getBounds().getCenter() : null;

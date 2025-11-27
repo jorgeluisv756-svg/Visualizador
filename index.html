@@ -109,7 +109,7 @@
         }).addTo(map);
       });
 
-    // Estilo por inversión (solo 1er informe)
+    // Estilo por inversión (solo para 1er informe)
     function estiloPorInversion(valor) {
       valor = Number(valor);
       if (valor <= 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 0.7 };
@@ -132,48 +132,42 @@
       if (informe2Layer) map.removeLayer(informe2Layer);
     }
 
-    // Eventos de selección
     Array.from(radios).forEach(radio => {
       radio.addEventListener('change', function(e) {
         limpiarInformes();
+
         if (e.target.value === 'informe1') {
           if (informesData) {
             informe1Layer = L.geoJSON(informesData, {
               style: f => estiloPorInversion(f.properties.ExpTra1eIn)
-            });
-            // Agregar encima de Municipios, dejando Regiones y Edo_Hgo activos
-            informe1Layer.addTo(map);
+            }).addTo(map);
+
+            // Orden correcto: Municipios → TuExpTrans → Regiones → Edo_Hgo
+            municipiosLayer.bringToBack();
+            informe1Layer.bringToFront();
+            regionesLayer.bringToFront();
+            edoLayer.bringToFront();
+
             legendDiv.style.display = "block";
           }
         } else if (e.target.value === 'informe2') {
           if (informesData) {
             informe2Layer = L.geoJSON(informesData, {
-              style: f => ({
-                color: "rgb(60,120,200)",
-                weight: 1,
-                fillColor: "rgba(60,120,200,0.35)",
-                fillOpacity: 0.6
-              })
-            });
-            informe2Layer.addTo(map);
+              style: f => estiloPorInversion(f.properties.ExpTra2dIn)
+            }).addTo(map);
+
+            municipiosLayer.bringToBack();
+            informe2Layer.bringToFront();
+            regionesLayer.bringToFront();
+            edoLayer.bringToFront();
+
             legendDiv.style.display = "none";
           }
         }
       });
     });
 
-    // Mostrar mapa base si no hay selección
-    function asegurarMapaBaseSiNoSeleccion() {
-      const seleccionado = Array.from(radios).some(r => r.checked);
-      if (!seleccionado) {
-        limpiarInformes();
-        legendDiv.style.display = "none";
-      }
-    }
-    window.addEventListener('load', asegurarMapaBaseSiNoSeleccion);
-    document.addEventListener('click', asegurarMapaBaseSiNoSeleccion);
-
-    // Construir la leyenda
+    // Tabla de inversión
     var segmentos = [
       { color: "rgb(204,204,204)", label: "Sin inversión" },
       { color: "rgb(245,230,210)", label: "$1 - $66,000" },

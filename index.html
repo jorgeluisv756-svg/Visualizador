@@ -141,14 +141,18 @@
             // Centro del feature
             var center = layer.getBounds ? layer.getBounds().getCenter() : null;
             if (!center) return;
-            L.marker(center, { pane: 'labels', interactive: false })
-              .bindTooltip(String(val), {
-                permanent: true,
-                direction: "auto",
-                offset: [10, 0], // ligero desplazamiento para minimizar choque con Regiones
-                className: "mun-label"
-              })
-              .addTo(municipiosLabelLayer);
+            L.marker(center, {
+  		pane: 'labels',
+  		interactive: false,
+  		icon: L.divIcon({ className: 'empty-icon' })
+	})
+	   .bindTooltip(String(val), {
+  	   permanent: true,
+  	   direction: "auto",
+  	   offset: [10, 0],
+  	   className: "mun-label"
+	})
+	   .addTo(municipiosLabelLayer);
           },
           style: { opacity: 0, fillOpacity: 0 } // no afecta, solo para iterar
         });

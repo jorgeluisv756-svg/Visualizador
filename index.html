@@ -109,7 +109,7 @@
         }).addTo(map);
       });
 
-    // Estilo por inversión (solo para 1er informe)
+    // Estilo por inversión
     function estiloPorInversion(valor) {
       valor = Number(valor);
       if (valor <= 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 0.7 };
@@ -142,7 +142,7 @@
               style: f => estiloPorInversion(f.properties.ExpTra1eIn)
             }).addTo(map);
 
-            // Orden correcto: Municipios → TuExpTrans → Regiones → Edo_Hgo
+            // Orden: Municipios → TuExpTrans → Regiones → Edo_Hgo
             municipiosLayer.bringToBack();
             informe1Layer.bringToFront();
             regionesLayer.bringToFront();
@@ -167,7 +167,7 @@
       });
     });
 
-    // Tabla de inversión
+    // Tabla de inversión (solo para 1er informe)
     var segmentos = [
       { color: "rgb(204,204,204)", label: "Sin inversión" },
       { color: "rgb(245,230,210)", label: "$1 - $66,000" },

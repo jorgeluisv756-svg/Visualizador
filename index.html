@@ -215,76 +215,94 @@
     }
 
     // Render según selección
-    Array.from(radios).forEach(radio => {
-      radio.addEventListener('change', function(e) {
-        limpiarInformes();
+   Array.from(radios).forEach(radio => {
+  radio.addEventListener('click', function(e) {
+    // Si ya estaba seleccionado, lo desmarcamos y volvemos al mapa base
+    if (radio.checked && radio.dataset.selected === "true") {
+      limpiarInformes();
+      legendDiv.style.display = "none";
+      legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
+      radio.checked = false;
+      radio.dataset.selected = "false";
 
-        if (e.target.value === 'informe1') {
-          if (informesData) {
-            informe1Layer = L.geoJSON(informesData, {
-              style: f => estiloInversion1(getField(f, "ExpTra1eIn"))
-            }).addTo(map);
+      // Reordenar capas base
+      municipiosLayer && municipiosLayer.bringToBack();
+      regionesLayer && regionesLayer.bringToFront();
+      edoLayer && edoLayer.bringToFront();
+      return;
+    }
 
-            municipiosLayer && municipiosLayer.bringToBack();
-            informe1Layer && informe1Layer.bringToFront();
-            regionesLayer && regionesLayer.bringToFront();
-            edoLayer && edoLayer.bringToFront();
+    // Marcar este radio como seleccionado
+    Array.from(radios).forEach(r => r.dataset.selected = "false");
+    radio.dataset.selected = "true";
 
-            // Leyenda 1er informe
-            legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
-            var segmentos1 = [
-              { color: "rgb(204,204,204)", label: "Sin inversión" },
-              { color: "rgb(245,230,210)", label: "$1 - $66,000" },
-              { color: "rgb(225,200,150)", label: "$66,001 - $126,000" },
-              { color: "rgb(180,150,100)", label: "$126,001 - $240,000" },
-              { color: "rgb(137,112,68)", label: "$240,001 - $1,122,000" }
-            ];
-            segmentos1.forEach(s => {
-              var row = document.createElement('div');
-              var box = document.createElement('span');
-              box.style.background = s.color;
-              row.appendChild(box);
-              row.appendChild(document.createTextNode(s.label));
-              legendDiv.appendChild(row);
-            });
-            legendDiv.style.display = "block";
-          }
-        } else if (e.target.value === 'informe2') {
-          if (informesData) {
-            informe2Layer = L.geoJSON(informesData, {
-              style: f => estiloInversion2(getField(f, "ExpTra2dIn"))
-            }).addTo(map);
+    limpiarInformes();
 
-            municipiosLayer && municipiosLayer.bringToBack();
-            informe2Layer && informe2Layer.bringToFront();
-            regionesLayer && regionesLayer.bringToFront();
-            edoLayer && edoLayer.bringToFront();
+    if (e.target.value === 'informe1') {
+      if (informesData) {
+        informe1Layer = L.geoJSON(informesData, {
+          style: f => estiloInversion1(getField(f, "ExpTra1eIn"))
+        }).addTo(map);
 
-            // Leyenda 2do informe (mismos colores, títulos nuevos)
-            legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
-            var segmentos2 = [
-              { color: "rgb(204,204,204)", label: "Sin inversión" },
-              { color: "rgb(245,230,210)", label: "$1 - $247,500" },
-              { color: "rgb(225,200,150)", label: "$247,501 - $517,500" },
-              { color: "rgb(180,150,100)", label: "$517,501 - $1,200,000" },
-              { color: "rgb(137,112,68)", label: "$1,200,001 - $3,180,000" }
-            ];
-            segmentos2.forEach(s => {
-              var row = document.createElement('div');
-              var box = document.createElement('span');
-              box.style.background = s.color;
-              row.appendChild(box);
-              row.appendChild(document.createTextNode(s.label));
-              legendDiv.appendChild(row);
-            });
-            legendDiv.style.display = "block";
-          }
-        }
-      });
-    });
+        municipiosLayer && municipiosLayer.bringToBack();
+        informe1Layer && informe1Layer.bringToFront();
+        regionesLayer && regionesLayer.bringToFront();
+        edoLayer && edoLayer.bringToFront();
 
-    // Opcional: seleccionar por defecto el 1er informe al cargar
-    // document.querySelector('input[name="mapOption"][value="informe1"]').click();
+        // Leyenda 1er informe
+        legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
+        var segmentos1 = [
+          { color: "rgb(204,204,204)", label: "Sin inversión" },
+          { color: "rgb(245,230,210)", label: "$1 - $66,000" },
+          { color: "rgb(225,200,150)", label: "$66,001 - $126,000" },
+          { color: "rgb(180,150,100)", label: "$126,001 - $240,000" },
+          { color: "rgb(137,112,68)", label: "$240,001 - $1,122,000" }
+        ];
+        legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
+        segmentos1.forEach(s => {
+          var row = document.createElement('div');
+          var box = document.createElement('span');
+          box.style.background = s.color;
+          row.appendChild(box);
+          row.appendChild(document.createTextNode(s.label));
+          legendDiv.appendChild(row);
+        });
+        legendDiv.style.display = "block";
+      }
+    } else if (e.target.value === 'informe2') {
+      if (informesData) {
+        informe2Layer = L.geoJSON(informesData, {
+          style: f => estiloInversion2(getField(f, "ExpTra2dIn"))
+        }).addTo(map);
+
+        municipiosLayer && municipiosLayer.bringToBack();
+        informe2Layer && informe2Layer.bringToFront();
+        regionesLayer && regionesLayer.bringToFront();
+        edoLayer && edoLayer.bringToFront();
+
+        // Leyenda 2do informe
+        legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
+        var segmentos2 = [
+          { color: "rgb(204,204,204)", label: "Sin inversión" },
+          { color: "rgb(245,230,210)", label: "$1 - $247,500" },
+          { color: "rgb(225,200,150)", label: "$247,501 - $517,500" },
+          { color: "rgb(180,150,100)", label: "$517,501 - $1,200,000" },
+          { color: "rgb(137,112,68)", label: "$1,200,001 - $3,180,000" }
+        ];
+        segmentos2.forEach(s => {
+          var row = document.createElement('div');
+          var box = document.createElement('span');
+          box.style.background = s.color;
+          row.appendChild(box);
+          row.appendChild(document.createTextNode(s.label));
+          legendDiv.appendChild(row);
+        });
+        legendDiv.style.display = "block";
+      }
+    }
+  });
+});
+
   </script>
 </body>
 </html>

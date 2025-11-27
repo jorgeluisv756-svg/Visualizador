@@ -59,6 +59,25 @@
       margin-right: 6px;
     }
 
+   .region-label {
+     font-size: 13px;
+     font-weight: bold;
+     color: #000;
+     text-align: center;
+     background: rgba(255,255,255,0.6); /* fondo semitransparente */
+     padding: 2px 4px;
+     border-radius: 3px;
+    }
+
+   .mun-label {
+     font-size: 10px;
+     color: #333;
+     text-align: center;
+     background: rgba(255,255,255,0.6); /* fondo semitransparente */
+     padding: 1px 3px;
+     border-radius: 3px;
+    }
+
     @media (max-width: 600px) {
       #logo img { width: 200px; }
       #panel { width: 220px; font-size: 12px; }
@@ -91,23 +110,41 @@
     var municipiosLayer, regionesLayer, edoLayer;
     var informe1Layer, informe2Layer, informesData;
 
-    // Municipios (primera capa)
+    // Municipios (primera capa con etiquetas)
     fetch('Municipios.geojson')
-      .then(res => res.json())
-      .then(data => {
-        municipiosLayer = L.geoJSON(data, {
-          style: { color: "#999", weight: 1, fillOpacity: 0 }
-        }).addTo(map);
-      });
+       .then(res => res.json())
+       .then(data => {
+         municipiosLayer = L.geoJSON(data, {
+      style: { color: "#999", weight: 1, fillOpacity: 0 },
+      onEachFeature: function (feature, layer) {
+        if (feature.properties && feature.properties.CVE_MUN) {
+          layer.bindTooltip(feature.properties.CVE_MUN, {
+            permanent: true,
+            direction: "auto", // se ajusta si hay conflicto
+            className: "mun-label"
+          });
+        }
+      }
+    }).addTo(map);
+  });
 
-    // Regiones (tercera capa)
+    // Regiones (tercera capa con etiquetas)
     fetch('Regiones.geojson')
-      .then(res => res.json())
-      .then(data => {
+       .then(res => res.json())
+       .then(data => {
         regionesLayer = L.geoJSON(data, {
-          style: { color: "#000", weight: 2, fillOpacity: 0, dashArray: "1,6,1,6" }
-        }).addTo(map);
-      });
+          style: { color: "#000", weight: 2, fillOpacity: 0, dashArray: "1,6,1,6" },
+      onEachFeature: function (feature, layer) {
+        if (feature.properties && feature.properties.Regiones) {
+          layer.bindTooltip(feature.properties.Regiones, {
+            permanent: true,
+            direction: "center",
+            className: "region-label"
+          });
+        }
+      }
+    }).addTo(map);
+  });
 
     // Edo_Hgo (última capa)
     fetch('Edo_Hgo.geojson')

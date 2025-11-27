@@ -95,10 +95,9 @@
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Capas del mapa base
     var municipiosLayer, regionesLayer, edoLayer;
 
-    // Municipios (capa inferior)
+    // Municipios (gris claro, sin relleno)
     fetch('Municipios.geojson')
       .then(res => res.json())
       .then(data => {
@@ -107,21 +106,30 @@
         }).addTo(map);
       });
 
-    // Regiones (capa intermedia)
+    // Regiones (borde negro, 2pt, estilo punto-línea-punto)
     fetch('Regiones.geojson')
       .then(res => res.json())
       .then(data => {
         regionesLayer = L.geoJSON(data, {
-          style: { color: "#555", weight: 2, fillOpacity: 0 }
+          style: { 
+            color: "#000", 
+            weight: 2, 
+            fillOpacity: 0, 
+            dashArray: "1,6,1,6" // patrón punto-línea-punto
+          }
         }).addTo(map);
       });
 
-    // Estado (capa superior)
+    // Estado de Hidalgo (borde rojo, sin relleno)
     fetch('Edo_Hgo.geojson')
       .then(res => res.json())
       .then(data => {
         edoLayer = L.geoJSON(data, {
-          style: { color: "#000", weight: 3, fillOpacity: 0 }
+          style: { 
+            color: "rgb(255,0,0)", 
+            weight: 3, 
+            fillOpacity: 0 
+          }
         }).addTo(map);
       });
 

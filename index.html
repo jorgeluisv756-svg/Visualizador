@@ -21,7 +21,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
     #logo img {
-      width: 500px;
+      width: 360px;
       height: auto;
       display: block;
       max-width: 90vw;
@@ -124,10 +124,10 @@
     var regionesLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
     var municipiosLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
 
-// Municipios con etiquetas CVE_MUN (dirección auto para evitar choque)
-fetch('Municipios.geojson')
-  .then(res => res.json())
-  .then(data => {
+    // Municipios con etiquetas CVE_MUN (dirección auto para evitar choque)
+    fetch('Municipios.geojson')
+    .then(res => res.json())
+    .then(data => {
     municipiosLayer = L.geoJSON(data, {
       style: { color: "#999", weight: 1, fillOpacity: 0 }
     }).addTo(map);

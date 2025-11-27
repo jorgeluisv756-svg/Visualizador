@@ -21,7 +21,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
     #logo img {
-      width: 380px;
+      width: 360px;
       height: auto;
       display: block;
       max-width: 90vw;
@@ -109,7 +109,7 @@
         }).addTo(map);
       });
 
-    // Estilo por inversión (solo para 1er informe)
+    // Estilo por inversión
     function estiloPorInversion(valor) {
       valor = Number(valor);
       if (valor <= 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 0.7 };
@@ -139,7 +139,7 @@
         if (e.target.value === 'informe1') {
           if (informesData) {
             informe1Layer = L.geoJSON(informesData, {
-              style: f => estiloPorInversion(f.properties.ExpTra1eIn)
+              style: f => estiloPorInversion(Number(f.properties.ExpTra1eIn))
             }).addTo(map);
 
             // Orden: Municipios → TuExpTrans → Regiones → Edo_Hgo
@@ -153,7 +153,7 @@
         } else if (e.target.value === 'informe2') {
           if (informesData) {
             informe2Layer = L.geoJSON(informesData, {
-              style: f => estiloPorInversion(f.properties.ExpTra2dIn)
+              style: f => estiloPorInversion(Number(f.properties.ExpTra2dIn))
             }).addTo(map);
 
             municipiosLayer.bringToBack();

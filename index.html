@@ -198,71 +198,92 @@
       }
     }
 
-    // Eventos de selección
-    Array.from(radios).forEach(radio => {
-      radio.addEventListener('change', function(e) {
-        limpiarInformes();
+    <script>
+  // ... (todo lo anterior igual)
 
-        if (e.target.value === 'informe1') {
-          if (informesData) {
-            informe1Layer = L.geoJSON(informesData, {
-              style: function(f) {
-                var valor = getField(f, "ExpTra1eIn");
-                return estiloInversion1(valor);
-              }
-            }).addTo(map);
+  // Estilo por inversión del 2do informe (rangos nuevos)
+  function estiloInversion2(valorNum) {
+    var valor = toNumberSafe(valorNum);
+    if (isNaN(valor) || valor === 0) {
+      return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
+    } else if (valor >= 1 && valor <= 247500) {
+      return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 1 };
+    } else if (valor >= 247501 && valor <= 517500) {
+      return { fillColor: "rgb(225,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
+    } else if (valor >= 517501 && valor <= 1200000) {
+      return { fillColor: "rgb(180,150,100)", color: "#333", weight: 1, fillOpacity: 1 };
+    } else if (valor >= 1200001 && valor <= 3180000) {
+      return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 1 };
+    } else {
+      return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
+    }
+  }
 
-            // Orden: Municipios → TuExpTrans → Regiones → Edo_Hgo
-            municipiosLayer && municipiosLayer.bringToBack();
-            informe1Layer && informe1Layer.bringToFront();
-            regionesLayer && regionesLayer.bringToFront();
-            edoLayer && edoLayer.bringToFront();
+  Array.from(radios).forEach(radio => {
+    radio.addEventListener('change', function(e) {
+      limpiarInformes();
 
-            legendDiv.style.display = "block";
-          }
-        } else if (e.target.value === 'informe2') {
-          if (informesData) {
-            informe2Layer = L.geoJSON(informesData, {
-              style: function(f) {
-                var valor = getField(f, "ExpTra2dIn");
-                var v = toNumberSafe(valor);
-                // Estilo genérico; si quieres rangos del 2do informe, pásamelos y los integro
-                return {
-                  fillColor: isNaN(v) ? "#ccc" : "rgba(60,120,200,0.35)",
-                  color: "rgb(60,120,200)",
-                  weight: 1,
-                  fillOpacity: 0.6
-                };
-              }
-            }).addTo(map);
+      if (e.target.value === 'informe1') {
+        if (informesData) {
+          informe1Layer = L.geoJSON(informesData, {
+            style: f => estiloInversion1(getField(f, "ExpTra1eIn"))
+          }).addTo(map);
 
-            municipiosLayer && municipiosLayer.bringToBack();
-            informe2Layer && informe2Layer.bringToFront();
-            regionesLayer && regionesLayer.bringToFront();
-            edoLayer && edoLayer.bringToFront();
+          municipiosLayer && municipiosLayer.bringToBack();
+          informe1Layer && informe1Layer.bringToFront();
+          regionesLayer && regionesLayer.bringToFront();
+          edoLayer && edoLayer.bringToFront();
 
-            legendDiv.style.display = "none";
-          }
+          legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
+          var segmentos1 = [
+            { color: "rgb(204,204,204)", label: "Sin inversión" },
+            { color: "rgb(245,230,210)", label: "$1 - $66,000" },
+            { color: "rgb(225,200,150)", label: "$66,001 - $126,000" },
+            { color: "rgb(180,150,100)", label: "$126,001 - $240,000" },
+            { color: "rgb(137,112,68)", label: "$240,001 - $1,122,000" }
+          ];
+          segmentos1.forEach(s => {
+            var row = document.createElement('div');
+            var box = document.createElement('span');
+            box.style.background = s.color;
+            row.appendChild(box);
+            row.appendChild(document.createTextNode(s.label));
+            legendDiv.appendChild(row);
+          });
+          legendDiv.style.display = "block";
         }
-      });
-    });
+      } else if (e.target.value === 'informe2') {
+        if (informesData) {
+          informe2Layer = L.geoJSON(informesData, {
+            style: f => estiloInversion2(getField(f, "ExpTra2dIn"))
+          }).addTo(map);
 
-    // Construir la leyenda (1er informe)
-    var segmentos = [
-      { color: "rgb(204,204,204)", label: "Sin inversión" },
-      { color: "rgb(245,230,210)", label: "$1 - $66,000" },
-      { color: "rgb(225,200,150)", label: "$66,001 - $126,000" },
-      { color: "rgb(180,150,100)", label: "$126,001 - $240,000" },
-      { color: "rgb(137,112,68)", label: "$240,001 - $1,122,000" }
-    ];
-    segmentos.forEach(function(s) {
-      var row = document.createElement('div');
-      var box = document.createElement('span');
-      box.style.background = s.color;
-      row.appendChild(box);
-      row.appendChild(document.createTextNode(s.label));
-      legendDiv.appendChild(row);
+          municipiosLayer && municipiosLayer.bringToBack();
+          informe2Layer && informe2Layer.bringToFront();
+          regionesLayer && regionesLayer.bringToFront();
+          edoLayer && edoLayer.bringToFront();
+
+          legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
+          var segmentos2 = [
+            { color: "rgb(204,204,204)", label: "Sin inversión" },
+            { color: "rgb(245,230,210)", label: "$1 - $247,500" },
+            { color: "rgb(225,200,150)", label: "$247,501 - $517,500" },
+            { color: "rgb(180,150,100)", label: "$517,501 - $1,200,000" },
+            { color: "rgb(137,112,68)", label: "$1,200,001 - $3,180,000" }
+          ];
+          segmentos2.forEach(s => {
+            var row = document.createElement('div');
+            var box = document.createElement('span');
+            box.style.background = s.color;
+            row.appendChild(box);
+            row.appendChild(document.createTextNode(s.label));
+            legendDiv.appendChild(row);
+          });
+          legendDiv.style.display = "block";
+        }
+      }
     });
-  </script>
+  });
+</script>
 </body>
 </html>

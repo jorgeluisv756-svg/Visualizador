@@ -92,7 +92,7 @@
       box-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
     .mun-label {
-      font-size: 12px;
+      font-size: 10px;
       color: #000;
       text-align: center;
       background: rgba(255,255,255,0.6);
@@ -229,7 +229,7 @@
     var regionesLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
     var municipiosLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
 
-    // Municipios con etiquetas CVE_MUN
+    // Municipios con etiquetas NOMGEO
     fetch('Municipios.geojson')
       .then(res => res.json())
       .then(data => {
@@ -240,7 +240,7 @@
          L.geoJSON(data, {
            onEachFeature: function(feature, layer) {
              var center = layer.getBounds().getCenter();
-             var label = getField({ properties: feature.properties }, "CVE_MUN");
+             var label = getField({ properties: feature.properties }, "NOMGEO");
              if (!label || !center) return;
              L.marker(center, {
              pane: 'labels',

@@ -118,7 +118,10 @@
     <label><input type="radio" name="mapOption" value="informe1"> Tu Experiencia Transforma 1er Informe</label><br>
     <label><input type="radio" name="mapOption" value="informe2"> Tu Experiencia Transforma 2do Informe</label><br>
     <label><input type="radio" name="mapOption" value="juv1"> Transformando con la Juventud 1er Informe</label><br>
-    <label><input type="radio" name="mapOption" value="juv2"> Transformando con la Juventud 2do Informe</label>
+    <label><input type="radio" name="mapOption" value="juv2"> Transformando con la Juventud 2do Informe</label><br>
+    <label><input type="radio" name="mapOption" value="NAFIN1> Impulso NAFIN 1er Informe</label><br>
+    <label><input type="radio" name="mapOption" value="NAFIN2> Impulso NAFIN 2do Informe</label><br>
+    <label><input type="radio" name="mapOption" value="NAFIN3> Impulso NAFIN 3er Informe (Junio)</label>
     <div id="legend"><strong>INVERSIÓN</strong></div>
   </div>
 
@@ -150,8 +153,8 @@
 
     // Capas y datos
     var municipiosLayer, regionesLayer, edoLayer;
-    var informe1Layer, informe2Layer, Juv1Layer, Juv2Layer;
-    var informesExpTransData, informesJuvData;
+    var informe1Layer, informe2Layer, Juv1Layer, Juv2Layer; NAFIN1Layer; NAFIN2Layer; NAFIN3Layer;
+    var informesExpTransData, informesJuvData; informesNAFINData;
     var regionesLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
     var municipiosLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
 
@@ -202,6 +205,7 @@
     // Cargar datasets de informes
     fetch('TuExpTrans.geojson').then(res => res.json()).then(data => { informesExpTransData = data; });
     fetch('TransJuv.geojson').then(res => res.json()).then(data => { informesJuvData = data; });
+    fetch('NAFIN.geojson').then(res => res.json()).then(data => { informesNAFINData = data; });
 
     // UI refs
     var legendDiv = document.getElementById('legend');
@@ -213,6 +217,9 @@
       if (informe2Layer) { map.removeLayer(informe2Layer); informe2Layer = null; }
       if (Juv1Layer) { map.removeLayer(Juv1Layer); Juv1Layer = null; }
       if (Juv2Layer) { map.removeLayer(Juv2Layer); Juv2Layer = null; }
+      if (NAFIN1Layer) { map.removeLayer(NAFIN1Layer); NAFIN1Layer = null; }
+      if (NAFIN2Layer) { map.removeLayer(NAFIN2Layer); NAFIN2Layer = null; }
+      if (NAFIN3Layer) { map.removeLayer(NAFIN3Layer); NAFIN3Layer = null; }
     }
 
     // Utilidades
@@ -296,6 +303,37 @@
       else if (valor >= 2031501 && valor <= 6303500) return { fillColor: "rgb(55,110,100)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
+
+    // Estilos (NAFIN)
+    function estiloNAFIN1(valorNum) {
+      var valor = toNumberSafe(valorNum);
+      if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 800000) return { fillColor: "rgb(255,182,171)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 800001 && valor <= 1400000) return { fillColor: "rgb(250,131,110)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1400001 && valor <= 2400000) return { fillColor: "rgb(237,57,33)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 2400001 && valor <= 5000000) return { fillColor: "rgb(230,0,0)", color: "#333", weight: 1, fillOpacity: 1 };
+      else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
+    }
+
+    //function estiloJuv2(valorNum) {
+    //  var valor = toNumberSafe(valorNum);
+    //  if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
+    //  else if (valor >= 1 && valor <= 298000) return { fillColor: "rgb(220,245,220)", color: "#333", weight: 1, fillOpacity: 1 };
+    //  else if (valor >= 298001 && valor <= 604500) return { fillColor: "rgb(150,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
+    //  else if (valor >= 604501 && valor <= 2031500) return { fillColor: "rgb(100,170,100)", color: "#333", weight: 1, fillOpacity: 1 };
+    //  else if (valor >= 2031501 && valor <= 6303500) return { fillColor: "rgb(55,110,100)", color: "#333", weight: 1, fillOpacity: 1 };
+    //  else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
+    //}
+
+    //function estiloJuv2(valorNum) {
+    //  var valor = toNumberSafe(valorNum);
+    //  if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
+    //  else if (valor >= 1 && valor <= 298000) return { fillColor: "rgb(220,245,220)", color: "#333", weight: 1, fillOpacity: 1 };
+    //  else if (valor >= 298001 && valor <= 604500) return { fillColor: "rgb(150,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
+    //  else if (valor >= 604501 && valor <= 2031500) return { fillColor: "rgb(100,170,100)", color: "#333", weight: 1, fillOpacity: 1 };
+    //  else if (valor >= 2031501 && valor <= 6303500) return { fillColor: "rgb(55,110,100)", color: "#333", weight: 1, fillOpacity: 1 };
+    //  else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
+    //}
 
     // Construcción de leyendas
     function buildLegend(items, title = "INVERSIÓN") {
@@ -401,6 +439,23 @@
             { color: "rgb(150,200,150)", label: "$298,001 - $604,500" },
             { color: "rgb(100,170,100)", label: "$604,501 - $2,031,500" },
             { color: "rgb(55,110,100)", label: "$2,031,501 - $6,303,500" }
+          ], "INVERSIÓN");
+        } else if (e.target.value === 'NAFIN1' && informesNAFINData) {
+          Juv2Layer = L.geoJSON(informesNAFINData, {
+            style: f => estiloNAFIN1(getField(f, "imp_1inv"))
+          }).addTo(map);
+
+          municipiosLayer && municipiosLayer.bringToBack();
+          NAFIN1Layer && NAFIN1Layer.bringToFront();
+          regionesLayer && regionesLayer.bringToFront();
+          edoLayer && edoLayer.bringToFront();
+
+          buildLegend([
+            { color: "rgb(204,204,204)", label: "Sin inversión" },
+            { color: "rgb(255,182,171)", label: "$1 - $800,000" },
+            { color: "rgb(250,131,110)", label: "$800,001 - $1,400,000" },
+            { color: "rgb(237,57,33)", label: "$1,400,001 - $2,400,000" },
+            { color: "rgb(230,0,0)", label: "$2,400,001 - $5,000,000" }
           ], "INVERSIÓN");
         }
       });

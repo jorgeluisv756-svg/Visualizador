@@ -369,10 +369,10 @@
     function estiloJuv1(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 1 && valor <= 426000) return { fillColor: "rgb(170,255,85)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 426001 && valor <= 1056000) return { fillColor: "rgb(102,170,68)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 1056001 && valor <= 2178000) return { fillColor: "rgb(34,102,34)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 2178001 && valor <= 3530000) return { fillColor: "rgb(0,51,0)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 426000) return { fillColor: "rgb(220,245,220)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 426001 && valor <= 1056000) return { fillColor: "rgb(150,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1056001 && valor <= 2178000) return { fillColor: "rgb(100,170,100)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 2178001 && valor <= 3530000) return { fillColor: "rgb(55,110,100)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
 
@@ -471,12 +471,12 @@
 
             var segmentosJuv1 = [
               { color: "rgb(204,204,204)", label: "Sin inversión" },
-              { color: "rgb(170,255,85)", label: "$1 - $426,000" },
-              { color: "rgb(102,170,68)", label: "$426,001 - $1,056,000" },
-              { color: "rgb(34,102,34)", label: "$1,056,001 - $2,178,000" },
-              { color: "rgb(0,51,0)", label: "$2,178,001 - $3,530,000" }
+              { color: "rgb(220,245,220)", label: "$1 - $426,000" },
+              { color: "rgb(150,200,150)", label: "$426,001 - $1,056,000" },
+              { color: "rgb(100,170,100)", label: "$1,056,001 - $2,178,000" },
+              { color: "rgb(55,110,100)", label: "$2,178,001 - $3,530,000" }
             ];
-            buildLegend(segmentosJuv1, "INVERSIÓN (Juventud)");
+            buildLegend(segmentosJuv1, "INVERSIÓN");
           }
         } else if (e.target.value === 'juv2') {
           if (informesJuvData) {
@@ -496,7 +496,7 @@
               { color: "rgb(34,102,34)", label: "$1,056,001 - $2,178,000" },
               { color: "rgb(0,51,0)", label: "$2,178,001 - $3,530,000" }
             ];
-            buildLegend(segmentosJuv2, "INVERSIÓN (Juventud)");
+            buildLegend(segmentosJuv2, "INVERSIÓN");
           }
         }
       });

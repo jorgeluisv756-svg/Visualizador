@@ -476,7 +476,7 @@
           ], "INVERSIÓN");
         } else if (e.target.value === 'NAFIN3' && informesNAFINData) {
           NAFIN3Layer = L.geoJSON(informesNAFINData, {
-            style: f => estiloNAFIN3(getField(f, "imp_3_Actj"))
+            style: f => estiloNAFIN3(getField(f, "Imp_3_Actj"))
           }).addTo(map);
 
           municipiosLayer && municipiosLayer.bringToBack();

@@ -420,9 +420,7 @@
           buildSimbolos([
             { borderColor: "#999", label: "Municipio" },
             { borderColor: "#000", label: "Región (discontinua)" },
-            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" },
-            { fill: "rgb(245,230,210)", label: "Inversión baja" },
-            { fill: "rgb(137,112,68)", label: "Inversión alta" }
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" }
           ]);
 
         } else if (e.target.value === 'informe2' && informesExpTransData) {
@@ -445,9 +443,7 @@
           buildSimbolos([
             { borderColor: "#999", label: "Municipio" },
             { borderColor: "#000", label: "Región (discontinua)" },
-            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" },
-            { fill: "rgb(245,230,210)", label: "Inversión baja" },
-            { fill: "rgb(137,112,68)", label: "Inversión alta" }
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" }
           ]);
 
         } else if (e.target.value === 'juv1' && informesJuvData) {
@@ -470,9 +466,7 @@
           buildSimbolos([
             { borderColor: "#999", label: "Municipio" },
             { borderColor: "#000", label: "Región (discontinua)" },
-            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" },
-            { fill: "rgb(220,245,220)", label: "Inversión baja" },
-            { fill: "rgb(55,110,100)", label: "Inversión alta" }
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" }
           ]);
 
         } else if (e.target.value === 'juv2' && informesJuvData) {
@@ -495,9 +489,7 @@
           buildSimbolos([
             { borderColor: "#999", label: "Municipio" },
             { borderColor: "#000", label: "Región (discontinua)" },
-            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" },
-            { fill: "rgb(220,245,220)", label: "Inversión baja" },
-            { fill: "rgb(55,110,100)", label: "Inversión alta" }
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" }
           ]);
 
         } else if (e.target.value === 'NAFIN1' && informesNAFINData) {
@@ -520,9 +512,7 @@
           buildSimbolos([
             { borderColor: "#999", label: "Municipio" },
             { borderColor: "#000", label: "Región (discontinua)" },
-            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" },
-            { fill: "rgb(255,182,171)", label: "Inversión baja" },
-            { fill: "rgb(230,0,0)", label: "Inversión alta" }
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" }
           ]);
 
         } else if (e.target.value === 'NAFIN2' && informesNAFINData) {
@@ -545,14 +535,12 @@
           buildSimbolos([
             { borderColor: "#999", label: "Municipio" },
             { borderColor: "#000", label: "Región (discontinua)" },
-            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" },
-            { fill: "rgb(255,182,171)", label: "Inversión baja" },
-            { fill: "rgb(230,0,0)", label: "Inversión alta" }
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" }
           ]);
 
         } else if (e.target.value === 'NAFIN3' && informesNAFINData) {
           NAFIN3Layer = L.geoJSON(informesNAFINData, {
-            style: f => estiloNAFIN3(getField(f, "imp_3inv"))
+            style: f => estiloNAFIN3(getField(f, "Imp_3_Actj"))
           }).addTo(map);
 
           municipiosLayer && municipiosLayer.bringToBack();
@@ -570,9 +558,7 @@
           buildSimbolos([
             { borderColor: "#999", label: "Municipio" },
             { borderColor: "#000", label: "Región (discontinua)" },
-            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" },
-            { fill: "rgb(255,182,171)", label: "Inversión baja" },
-            { fill: "rgb(230,0,0)", label: "Inversión alta" }
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" }
           ]);
         }
       });

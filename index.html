@@ -34,9 +34,11 @@
       font-family: Arial, sans-serif;
       font-size: 0.9em;
       width: 90vw;
-      max-width: 280px;
+      max-width: 300px;
     }
     #panel h3 { margin-top: 0; font-size: 14px; text-align: center; }
+
+    #menuOptions { display: none; margin-top: 8px; }
 
     #etiquetas-panel {
       position: absolute;
@@ -88,14 +90,12 @@
       font-family: Arial, sans-serif;
       font-size: 0.9em;
       width: 90vw;
-      max-width: 180px;
+      max-width: 220px;
+      display: none;
     }
     #simbolos-panel h3 { margin-top: 0; font-size: 13px; text-align: center; }
     .simbolo { display: flex; align-items: center; margin-bottom: 6px; }
     .simbolo .box { width: 20px; height: 20px; margin-right: 6px; background: none; border: 2px solid; }
-    .simbolo .municipio { border-color: #999; }
-    .simbolo .region { border: 2px dashed #000; }
-    .simbolo .estado { border-color: rgb(255,0,0); }
 
     @media (max-width: 600px) {
       #logo img { width: 200px; }
@@ -115,13 +115,16 @@
 
   <div id="panel">
     <h3>Selecciona un programa</h3>
-    <label><input type="radio" name="mapOption" value="informe1"> Tu Experiencia Transforma 1er Informe</label><br>
-    <label><input type="radio" name="mapOption" value="informe2"> Tu Experiencia Transforma 2do Informe</label><br>
-    <label><input type="radio" name="mapOption" value="juv1"> Transformando con la Juventud 1er Informe</label><br>
-    <label><input type="radio" name="mapOption" value="juv2"> Transformando con la Juventud 2do Informe</label><br>
-    <label><input type="radio" name="mapOption" value="NAFIN1"> Impulso NAFIN 1er Informe</label><br>
-    <label><input type="radio" name="mapOption" value="NAFIN2"> Impulso NAFIN 2do Informe</label><br>
-    <label><input type="radio" name="mapOption" value="NAFIN3"> Impulso NAFIN 3er Informe (Junio)</label>
+    <button id="menuBtn">Abrir menú</button>
+    <div id="menuOptions">
+      <label><input type="radio" name="mapOption" value="informe1"> Tu Experiencia Transforma 1er Informe</label><br>
+      <label><input type="radio" name="mapOption" value="informe2"> Tu Experiencia Transforma 2do Informe</label><br>
+      <label><input type="radio" name="mapOption" value="juv1"> Transformando con la Juventud 1er Informe</label><br>
+      <label><input type="radio" name="mapOption" value="juv2"> Transformando con la Juventud 2do Informe</label><br>
+      <label><input type="radio" name="mapOption" value="NAFIN1"> Impulso NAFIN 1er Informe</label><br>
+      <label><input type="radio" name="mapOption" value="NAFIN2"> Impulso NAFIN 2do Informe</label><br>
+      <label><input type="radio" name="mapOption" value="NAFIN3"> Impulso NAFIN 3er Informe (Junio)</label>
+    </div>
     <div id="legend"><strong>INVERSIÓN</strong></div>
   </div>
 
@@ -133,16 +136,14 @@
 
   <div id="simbolos-panel">
     <h3>Simbología</h3>
-    <div class="simbolo"><span class="box municipio"></span> Municipio</div>
-    <div class="simbolo"><span class="box region"></span> Región</div>
-    <div class="simbolo"><span class="box estado"></span> Estado de Hidalgo</div>
+    <div id="simbolos-content"></div>
   </div>
 
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // Inicializar mapa y capa base
+    // Inicialización del mapa
     var map = L.map('map').setView([20.1, -98.7], 8);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
@@ -158,7 +159,7 @@
     var regionesLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
     var municipiosLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
 
-    // Municipios con etiquetas NOMGEO
+    // Cargar Municipios y etiquetas
     fetch('Municipios.geojson')
       .then(res => res.json())
       .then(data => {
@@ -176,7 +177,7 @@
         });
       });
 
-    // Regiones con etiquetas "Regiones"
+    // Cargar Regiones y etiquetas
     fetch('Regiones.geojson')
       .then(res => res.json())
       .then(data => {
@@ -202,14 +203,20 @@
         edoLayer = L.geoJSON(data, { style: { color: "rgb(255,0,0)", weight: 3, fillOpacity: 0 } }).addTo(map);
       });
 
-    // Cargar datasets de informes
+    // Cargar datasets
     fetch('TuExpTrans.geojson').then(res => res.json()).then(data => { informesExpTransData = data; });
     fetch('TransJuv.geojson').then(res => res.json()).then(data => { informesJuvData = data; });
     fetch('NAFIN.geojson').then(res => res.json()).then(data => { informesNAFINData = data; });
 
-    // UI refs
+    // Referencias UI
     var legendDiv = document.getElementById('legend');
     var radios = document.getElementsByName('mapOption');
+
+    // Abrir/cerrar menú
+    document.getElementById('menuBtn').addEventListener('click', function() {
+      var menu = document.getElementById('menuOptions');
+      menu.style.display = (menu.style.display === "none" || menu.style.display === "") ? "block" : "none";
+    });
 
     // Limpieza unificada
     function limpiarInformes() {
@@ -220,6 +227,11 @@
       if (NAFIN1Layer) { map.removeLayer(NAFIN1Layer); NAFIN1Layer = null; }
       if (NAFIN2Layer) { map.removeLayer(NAFIN2Layer); NAFIN2Layer = null; }
       if (NAFIN3Layer) { map.removeLayer(NAFIN3Layer); NAFIN3Layer = null; }
+      legendDiv.style.display = "none";
+      legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
+      document.getElementById('simbolos-panel').style.display = "none";
+      // Desmarcar radios visualmente
+      Array.from(radios).forEach(r => { r.checked = false; r.dataset.selected = "false"; });
     }
 
     // Utilidades
@@ -272,7 +284,6 @@
       else if (valor >= 240001 && valor <= 1122000) return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
-
     function estiloInversion2(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
@@ -293,7 +304,6 @@
       else if (valor >= 2178001 && valor <= 3530000) return { fillColor: "rgb(55,110,100)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
-
     function estiloJuv2(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
@@ -314,24 +324,22 @@
       else if (valor >= 2400001 && valor <= 5000000) return { fillColor: "rgb(230,0,0)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
-
     function estiloNAFIN2(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 1 && valor <= 10000000) return { fillColor: "rgb(255,182,171)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 10000001 && valor <= 25842600) return { fillColor: "rgb(250,131,110)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 25842601 && valor <= 44376400) return { fillColor: "rgb(237,57,33)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 44376401 && valor <= 105663500) return { fillColor: "rgb(230,0,0)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 1000000) return { fillColor: "rgb(255,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1000001 && valor <= 2000000) return { fillColor: "rgb(255,150,100)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 2000001 && valor <= 4000000) return { fillColor: "rgb(255,80,50)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 4000001 && valor <= 8000000) return { fillColor: "rgb(200,0,0)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
-
     function estiloNAFIN3(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 1 && valor <= 5928200) return { fillColor: "rgb(255,182,171)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 5928201 && valor <= 24417000) return { fillColor: "rgb(250,131,110)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 24417001 && valor <= 42723000) return { fillColor: "rgb(237,57,33)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 42723001 && valor <= 144833037) return { fillColor: "rgb(230,0,0)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 1200000) return { fillColor: "rgb(255,220,180)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1200001 && valor <= 2500000) return { fillColor: "rgb(255,160,120)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 2500001 && valor <= 5000000) return { fillColor: "rgb(255,100,60)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 5000001 && valor <= 10000000) return { fillColor: "rgb(180,0,0)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
 
@@ -349,26 +357,43 @@
       legendDiv.style.display = "block";
     }
 
-    // Handler de radios con toggle + leyendas
+    // Construcción de simbología dinámica (panel inferior izquierdo)
+    function buildSimbolos(items) {
+      var panel = document.getElementById('simbolos-panel');
+      var content = document.getElementById('simbolos-content');
+      content.innerHTML = "";
+      items.forEach(s => {
+        var row = document.createElement('div');
+        row.className = "simbolo";
+        var box = document.createElement('span');
+        box.className = "box";
+        box.style.borderColor = s.borderColor || "#000";
+        box.style.background = s.fill || "none";
+        row.appendChild(box);
+        row.appendChild(document.createTextNode(s.label));
+        content.appendChild(row);
+      });
+      panel.style.display = "block";
+    }
+
+    // Handler de radios con toggle + leyendas + simbología
     Array.from(radios).forEach(radio => {
       radio.addEventListener('click', function(e) {
         // Si re-clicas el mismo, limpia y deselecciona
         if (radio.checked && radio.dataset.selected === "true") {
           limpiarInformes();
-          legendDiv.style.display = "none";
-          legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
-          radio.checked = false;
-          radio.dataset.selected = "false";
-
+          document.getElementById('menuOptions').style.display = "none";
+          // Traer base al frente
           municipiosLayer && municipiosLayer.bringToBack();
           regionesLayer && regionesLayer.bringToFront();
           edoLayer && edoLayer.bringToFront();
           return;
         }
 
-        // Marcar selección actual
+        // Marcar selección actual y cerrar el menú
         Array.from(radios).forEach(r => r.dataset.selected = "false");
         radio.dataset.selected = "true";
+        document.getElementById('menuOptions').style.display = "none";
 
         limpiarInformes();
 

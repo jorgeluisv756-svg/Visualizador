@@ -80,20 +80,24 @@
       margin-right: 6px;
     }
 
-    /* Etiquetas en pane dedicado */
     .region-label {
       font-size: 15px;
       font-weight: bold;
       color: #000;
       text-align: center;
-      background: rgba(255,255,255,0.6);
-      padding: 2px 4px;
-      border-radius: 3px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      background: none;
+      padding: 0;
+      border: none;
+      box-shadow: none;
+      text-shadow:
+        1px 1px 2px #fff,
+       -1px 1px 2px #fff,
+        1px -1px 2px #fff,
+       -1px -1px 2px #fff;
     }
     .mun-label {
       font-size: 10px;
-      max-width: 120px;
+      max-width: 140px;
       white-space: normal;
       font-weight: bold;
       word-wrap: break-word;
@@ -109,10 +113,7 @@
        -1px -1px 2px #fff;
     }
 
-    .empty-icon {
-      background: none;
-      border: none;
-    }
+    .empty-icon { background: none; border: none; }
 
     #simbolos-panel {
       position: absolute;
@@ -133,55 +134,27 @@
       font-size: 13px;
       text-align: center;
     }
+    .simbolo { display: flex; align-items: center; margin-bottom: 6px; }
     .simbolo .box {
       display: inline-block;
       width: 20px;
       height: 20px;
       margin-right: 6px;
-      background: none;      /* sin relleno */
-      border: 2px solid;     /* solo contorno */
+      background: none;
+      border: 2px solid;
     }
-
     .simbolo .municipio { border-color: #999; }
-    .simbolo .region { border-color: #000; dashArray: "1,6,1,6"; }
+    .simbolo .region { border: 2px dashed #000; }
     .simbolo .estado { border-color: rgb(255,0,0); }
-
 
     @media (max-width: 600px) {
       #logo img { width: 200px; }
-      #panel,
-      #etiquetas-panel{
-        bottom: 120px;
-        right: 10px;
-      }
-      #simbolos-panel {
-        bottom: 10px;
-        right: 10px;
-        width: 90vw;
-        font-size: 0.85em;
-        padding: 8px;
-      }
-
-      .region-label {
-        font-size: 11px;
-        padding: 1px 3px;
-      }
-
-      .mun-label {
-        font-size: 9px;
-        padding: 1px 2px;
-      }
-
-      .simbolo .box {
-        width: 16px;
-        height: 16px;
-        margin-right: 4px;
-      }
-
-      .simbolo .line {
-        width: 24px;
-        border-top-width: 2px;
-      }
+      #panel { max-width: 90vw; font-size: 0.85em; }
+      #etiquetas-panel { right: 10px; bottom: 100px; }
+      #simbolos-panel { left: 10px; bottom: 10px; }
+      .region-label { font-size: 11px; }
+      .mun-label { font-size: 9px; max-width: 120px; }
+      .simbolo .box { width: 16px; height: 16px; }
     }
   </style>
 </head>
@@ -193,8 +166,8 @@
   <div id="panel">
     <h3>Selecciona mapa</h3>
     <label><input type="radio" name="mapOption" value="informe1"> Tu Experiencia Transforma 1er Informe</label><br>
-    <label><input type="radio" name="mapOption" value="informe2"> Tu Experiencia Transforma 2do Informe</label>
-    <label><input type="radio" name="mapOption" value="juv1"> Transformando con la Juventud 1er Informe</label>
+    <label><input type="radio" name="mapOption" value="informe2"> Tu Experiencia Transforma 2do Informe</label><br>
+    <label><input type="radio" name="mapOption" value="juv1"> Transformando con la Juventud 1er Informe</label><br>
     <label><input type="radio" name="mapOption" value="juv2"> Transformando con la Juventud 2do Informe</label>
     <div id="legend"><strong>INVERSIÓN</strong></div>
   </div>
@@ -207,15 +180,9 @@
 
   <div id="simbolos-panel">
     <h3>Simbología</h3>
-    <div class="simbolo">
-      <span class="box municipio"></span> Municipio
-    </div>
-    <div class="simbolo">
-      <span class="box region"></span> Región
-   </div>
-    <div class="simbolo">
-      <span class="box estado"></span> Estado de Hidalgo
-    </div>
+    <div class="simbolo"><span class="box municipio"></span> Municipio</div>
+    <div class="simbolo"><span class="box region"></span> Región</div>
+    <div class="simbolo"><span class="box estado"></span> Estado de Hidalgo</div>
   </div>
 
   <div id="map"></div>
@@ -224,9 +191,7 @@
   <script>
     // Inicializar mapa
     var map = L.map('map').setView([20.1, -98.7], 8);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
     // Pane para etiquetas por encima de todo, sin capturar eventos
     map.createPane('labels');
@@ -235,7 +200,8 @@
 
     // Capas base y grupos de etiquetas
     var municipiosLayer, regionesLayer, edoLayer;
-    var informe1Layer, informe2Layer, Juv1Layer, Juv2Layer, informesData;
+    var informe1Layer, informe2Layer, Juv1Layer, Juv2Layer;
+    var informesExpTransData, informesJuvData;
     var regionesLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
     var municipiosLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
 
@@ -244,29 +210,29 @@
       .then(res => res.json())
       .then(data => {
         municipiosLayer = L.geoJSON(data, {
-           style: { color: "#999", weight: 1, fillOpacity: 0 }
-         }).addTo(map);
+          style: { color: "#999", weight: 1, fillOpacity: 0 }
+        }).addTo(map);
 
-         L.geoJSON(data, {
-           onEachFeature: function(feature, layer) {
-             var center = layer.getBounds().getCenter();
-             var label = getField({ properties: feature.properties }, "NOMGEO");
-             if (!label || !center) return;
-             L.marker(center, {
-             pane: 'labels',
-             interactive: false,
-             icon: L.divIcon({ className: 'empty-icon' })
-        })
-             .bindTooltip(String(label), {
-             permanent: true,
-             direction: "center",
-             className: "mun-label"
-        })
-         .addTo(municipiosLabelLayer);
-         },
-         style: { opacity: 0, fillOpacity: 0 }
-       });
-     });
+        L.geoJSON(data, {
+          onEachFeature: function(feature, layer) {
+            var center = layer.getBounds().getCenter();
+            var label = getField({ properties: feature.properties }, "NOMGEO");
+            if (!label || !center) return;
+            L.marker(center, {
+              pane: 'labels',
+              interactive: false,
+              icon: L.divIcon({ className: 'empty-icon' })
+            })
+            .bindTooltip(String(label), {
+              permanent: true,
+              direction: "center",
+              className: "mun-label"
+            })
+            .addTo(municipiosLabelLayer);
+          },
+          style: { opacity: 0, fillOpacity: 0 }
+        });
+      });
 
     // Regiones con etiquetas del campo "Regiones" (prioridad, centrado)
     fetch('Regiones.geojson')
@@ -278,44 +244,37 @@
 
         L.geoJSON(data, {
           onEachFeature: function(feature, layer) {
-            if (!feature || !feature.properties) return;
             var title = getField({ properties: feature.properties }, "Regiones");
             if (!title) return;
             var center = layer.getBounds ? layer.getBounds().getCenter() : null;
             if (!center) return;
             L.marker(center, {
-  	    pane: 'labels',
-	    interactive: false,
-  	    icon: L.divIcon({ className: 'empty-icon' })
-	 })
-	    .bindTooltip(String(title), {
- 	    permanent: true,
-  	    direction: "center",
-  	    className: "region-label"
-	 })
-	  .addTo(regionesLabelLayer);
+              pane: 'labels',
+              interactive: false,
+              icon: L.divIcon({ className: 'empty-icon' })
+            })
+            .bindTooltip(String(title), {
+              permanent: true,
+              direction: "center",
+              className: "region-label"
+            })
+            .addTo(regionesLabelLayer);
           },
           style: { opacity: 0, fillOpacity: 0 }
         });
       });
 
+    // Toggle de visibilidad de etiquetas
     document.getElementById('toggleMunicipios').addEventListener('change', function(e) {
-      if (e.target.checked) {
-        map.addLayer(municipiosLabelLayer);
-      } else {
-        map.removeLayer(municipiosLabelLayer);
-      }
+      if (e.target.checked) map.addLayer(municipiosLabelLayer);
+      else map.removeLayer(municipiosLabelLayer);
     });
-
     document.getElementById('toggleRegiones').addEventListener('change', function(e) {
-      if (e.target.checked) {
-        map.addLayer(regionesLabelLayer);
-      } else {
-        map.removeLayer(regionesLabelLayer);
-      }
+      if (e.target.checked) map.addLayer(regionesLabelLayer);
+      else map.removeLayer(regionesLabelLayer);
     });
 
-    // Edo_Hgo
+    // Estado de Hidalgo
     fetch('Edo_Hgo.geojson')
       .then(res => res.json())
       .then(data => {
@@ -324,34 +283,28 @@
         }).addTo(map);
       });
 
-    // Cargar TuExpTrans en memoria
+    // Cargar datasets por separado
     fetch('TuExpTrans.geojson')
       .then(res => res.json())
-      .then(data => { informesData = data; });
+      .then(data => { informesExpTransData = data; });
 
+    fetch('TransJuv.geojson')
+      .then(res => res.json())
+      .then(data => { informesJuvData = data; });
+
+    // Referencias UI
     var legendDiv = document.getElementById('legend');
     var radios = document.getElementsByName('mapOption');
 
+    // Limpieza unificada de capas de informes
     function limpiarInformes() {
       if (informe1Layer) { map.removeLayer(informe1Layer); informe1Layer = null; }
       if (informe2Layer) { map.removeLayer(informe2Layer); informe2Layer = null; }
-    }
-
-    // Cargar TransJuv en memoria
-    fetch('TransJuv.geojson')
-      .then(res => res.json())
-      .then(data => { informesData = data; });
-
-    var legendDiv = document.getElementById('legend');
-    var radios = document.getElementsByName('mapOption');
-
-    function limpiarInformes() {
       if (Juv1Layer) { map.removeLayer(Juv1Layer); Juv1Layer = null; }
       if (Juv2Layer) { map.removeLayer(Juv2Layer); Juv2Layer = null; }
     }
 
-
-    // Utilidad: convierte cualquier valor a número eliminando comas y símbolos
+    // Utilidades
     function toNumberSafe(x) {
       if (x === null || x === undefined) return NaN;
       var s = String(x).replace(/[,]/g, '').replace(/[^\d.\-]/g, '');
@@ -359,7 +312,6 @@
       return isNaN(v) ? NaN : v;
     }
 
-    // Utilidad: construir diccionario desde tabla HTML dentro de properties
     function propsFromHtmlTable(properties) {
       var dict = {};
       for (var k in properties) {
@@ -384,7 +336,6 @@
       return dict;
     }
 
-    // Obtener campo plano o extraído de tabla HTML
     function getField(f, fieldName) {
       if (f.properties && f.properties.hasOwnProperty(fieldName)) {
         return f.properties[fieldName];
@@ -393,7 +344,7 @@
       return dict[fieldName];
     }
 
-    // Estilo 1er informe
+    // Estilos de informes (ExpTrans)
     function estiloInversion1(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
@@ -404,7 +355,6 @@
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
 
-    // Estilo 2do informe
     function estiloInversion2(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
@@ -415,7 +365,7 @@
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
 
-    // Estilo Juv 1er informe
+    // Estilos de informes (Juventud)
     function estiloJuv1(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
@@ -426,9 +376,29 @@
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
 
+    function estiloJuv2(valorNum) {
+      // Si los rangos son iguales a Juv1, puedes reutilizarlos; ajusta si cambian
+      return estiloJuv1(valorNum);
+    }
+
+    // Utilidad para construir leyendas
+    function buildLegend(items, title = "INVERSIÓN") {
+      legendDiv.innerHTML = "<strong>" + title + "</strong>";
+      items.forEach(s => {
+        var row = document.createElement('div');
+        var box = document.createElement('span');
+        box.style.background = s.color;
+        row.appendChild(box);
+        row.appendChild(document.createTextNode(s.label));
+        legendDiv.appendChild(row);
+      });
+      legendDiv.style.display = "block";
+    }
+
     // Selector con comportamiento toggle + leyendas
     Array.from(radios).forEach(radio => {
       radio.addEventListener('click', function(e) {
+        // Toggle: si re-clicas el mismo, limpia
         if (radio.checked && radio.dataset.selected === "true") {
           limpiarInformes();
           legendDiv.style.display = "none";
@@ -442,14 +412,15 @@
           return;
         }
 
+        // Marcar selección actual
         Array.from(radios).forEach(r => r.dataset.selected = "false");
         radio.dataset.selected = "true";
 
         limpiarInformes();
 
         if (e.target.value === 'informe1') {
-          if (informesData) {
-            informe1Layer = L.geoJSON(informesData, {
+          if (informesExpTransData) {
+            informe1Layer = L.geoJSON(informesExpTransData, {
               style: f => estiloInversion1(getField(f, "ExpTra1eIn"))
             }).addTo(map);
 
@@ -458,7 +429,6 @@
             regionesLayer && regionesLayer.bringToFront();
             edoLayer && edoLayer.bringToFront();
 
-            legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
             var segmentos1 = [
               { color: "rgb(204,204,204)", label: "Sin inversión" },
               { color: "rgb(245,230,210)", label: "$1 - $66,000" },
@@ -466,19 +436,11 @@
               { color: "rgb(180,150,100)", label: "$126,001 - $240,000" },
               { color: "rgb(137,112,68)", label: "$240,001 - $1,122,000" }
             ];
-            segmentos1.forEach(s => {
-              var row = document.createElement('div');
-              var box = document.createElement('span');
-              box.style.background = s.color;
-              row.appendChild(box);
-              row.appendChild(document.createTextNode(s.label));
-              legendDiv.appendChild(row);
-            });
-            legendDiv.style.display = "block";
+            buildLegend(segmentos1);
           }
         } else if (e.target.value === 'informe2') {
-          if (informesData) {
-            informe2Layer = L.geoJSON(informesData, {
+          if (informesExpTransData) {
+            informe2Layer = L.geoJSON(informesExpTransData, {
               style: f => estiloInversion2(getField(f, "ExpTra2dIn"))
             }).addTo(map);
 
@@ -487,7 +449,6 @@
             regionesLayer && regionesLayer.bringToFront();
             edoLayer && edoLayer.bringToFront();
 
-            legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
             var segmentos2 = [
               { color: "rgb(204,204,204)", label: "Sin inversión" },
               { color: "rgb(245,230,210)", label: "$1 - $247,500" },
@@ -495,20 +456,12 @@
               { color: "rgb(180,150,100)", label: "$517,501 - $1,200,000" },
               { color: "rgb(137,112,68)", label: "$1,200,001 - $3,180,000" }
             ];
-            segmentos2.forEach(s => {
-              var row = document.createElement('div');
-              var box = document.createElement('span');
-              box.style.background = s.color;
-              row.appendChild(box);
-              row.appendChild(document.createTextNode(s.label));
-              legendDiv.appendChild(row);
-            });
-            legendDiv.style.display = "block";
+            buildLegend(segmentos2);
           }
-        } else if (e.target.value === 'Juv1') {
-          if (informesData) {
-            Juv1Layer = L.geoJSON(informesData, {
-              style: f => estiloJuv(getField(f, "InvTJuv1"))
+        } else if (e.target.value === 'juv1') {
+          if (informesJuvData) {
+            Juv1Layer = L.geoJSON(informesJuvData, {
+              style: f => estiloJuv1(getField(f, "InvTJuv1"))
             }).addTo(map);
 
             municipiosLayer && municipiosLayer.bringToBack();
@@ -516,7 +469,6 @@
             regionesLayer && regionesLayer.bringToFront();
             edoLayer && edoLayer.bringToFront();
 
-            legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
             var segmentosJuv1 = [
               { color: "rgb(204,204,204)", label: "Sin inversión" },
               { color: "rgb(170,255,85)", label: "$1 - $426,000" },
@@ -524,20 +476,34 @@
               { color: "rgb(34,102,34)", label: "$1,056,001 - $2,178,000" },
               { color: "rgb(0,51,0)", label: "$2,178,001 - $3,530,000" }
             ];
-            segmentos2.forEach(s => {
-              var row = document.createElement('div');
-              var box = document.createElement('span');
-              box.style.background = s.color;
-              row.appendChild(box);
-              row.appendChild(document.createTextNode(s.label));
-              legendDiv.appendChild(row);
-            });
-            legendDiv.style.display = "block";
+            buildLegend(segmentosJuv1, "INVERSIÓN (Juventud)");
+          }
+        } else if (e.target.value === 'juv2') {
+          if (informesJuvData) {
+            Juv2Layer = L.geoJSON(informesJuvData, {
+              style: f => estiloJuv2(getField(f, "InvTJuv2"))
+            }).addTo(map);
+
+            municipiosLayer && municipiosLayer.bringToBack();
+            Juv2Layer && Juv2Layer.bringToFront();
+            regionesLayer && regionesLayer.bringToFront();
+            edoLayer && edoLayer.bringToFront();
+
+            var segmentosJuv2 = [
+              { color: "rgb(204,204,204)", label: "Sin inversión" },
+              { color: "rgb(170,255,85)", label: "$1 - $426,000" },
+              { color: "rgb(102,170,68)", label: "$426,001 - $1,056,000" },
+              { color: "rgb(34,102,34)", label: "$1,056,001 - $2,178,000" },
+              { color: "rgb(0,51,0)", label: "$2,178,001 - $3,530,000" }
+            ];
+            buildLegend(segmentosJuv2, "INVERSIÓN (Juventud)");
           }
         }
       });
     });
 
+    // Opcional: seleccionar por defecto
+    // document.querySelector('input[name="mapOption"][value="informe2"]').click();
   </script>
 </body>
 </html>

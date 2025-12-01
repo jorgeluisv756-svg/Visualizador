@@ -37,7 +37,6 @@
       max-width: 300px;
     }
     #panel h3 { margin-top: 0; font-size: 14px; text-align: center; }
-
     #menuOptions { display: none; margin-top: 8px; }
 
     #etiquetas-panel {
@@ -143,7 +142,7 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // Inicialización del mapa
+    // Inicializar mapa y capa base
     var map = L.map('map').setView([20.1, -98.7], 8);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
@@ -159,7 +158,7 @@
     var regionesLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
     var municipiosLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
 
-    // Cargar Municipios y etiquetas
+    // Municipios con etiquetas NOMGEO
     fetch('Municipios.geojson')
       .then(res => res.json())
       .then(data => {
@@ -177,7 +176,7 @@
         });
       });
 
-    // Cargar Regiones y etiquetas
+    // Regiones con etiquetas "Regiones"
     fetch('Regiones.geojson')
       .then(res => res.json())
       .then(data => {
@@ -203,16 +202,16 @@
         edoLayer = L.geoJSON(data, { style: { color: "rgb(255,0,0)", weight: 3, fillOpacity: 0 } }).addTo(map);
       });
 
-    // Cargar datasets
+    // Cargar datasets de informes
     fetch('TuExpTrans.geojson').then(res => res.json()).then(data => { informesExpTransData = data; });
     fetch('TransJuv.geojson').then(res => res.json()).then(data => { informesJuvData = data; });
     fetch('NAFIN.geojson').then(res => res.json()).then(data => { informesNAFINData = data; });
 
-    // Referencias UI
+    // UI refs
     var legendDiv = document.getElementById('legend');
     var radios = document.getElementsByName('mapOption');
 
-    // Abrir/cerrar menú
+    // Menú desplegable
     document.getElementById('menuBtn').addEventListener('click', function() {
       var menu = document.getElementById('menuOptions');
       menu.style.display = (menu.style.display === "none" || menu.style.display === "") ? "block" : "none";
@@ -230,8 +229,6 @@
       legendDiv.style.display = "none";
       legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
       document.getElementById('simbolos-panel').style.display = "none";
-      // Desmarcar radios visualmente
-      Array.from(radios).forEach(r => { r.checked = false; r.dataset.selected = "false"; });
     }
 
     // Utilidades
@@ -314,7 +311,7 @@
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
 
-    // Estilos (NAFIN)
+    // Estilos (NAFIN) — rangos exactos que compartiste
     function estiloNAFIN1(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
@@ -327,19 +324,19 @@
     function estiloNAFIN2(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 1 && valor <= 1000000) return { fillColor: "rgb(255,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 1000001 && valor <= 2000000) return { fillColor: "rgb(255,150,100)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 2000001 && valor <= 4000000) return { fillColor: "rgb(255,80,50)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 4000001 && valor <= 8000000) return { fillColor: "rgb(200,0,0)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 10000000) return { fillColor: "rgb(255,182,171)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 10000001 && valor <= 25842600) return { fillColor: "rgb(250,131,110)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 25842601 && valor <= 44376400) return { fillColor: "rgb(237,57,33)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 44376401 && valor <= 105663500) return { fillColor: "rgb(230,0,0)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
     function estiloNAFIN3(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 1 && valor <= 1200000) return { fillColor: "rgb(255,220,180)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 1200001 && valor <= 2500000) return { fillColor: "rgb(255,160,120)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 2500001 && valor <= 5000000) return { fillColor: "rgb(255,100,60)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 5000001 && valor <= 10000000) return { fillColor: "rgb(180,0,0)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 5928200) return { fillColor: "rgb(255,182,171)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 5928201 && valor <= 24417000) return { fillColor: "rgb(250,131,110)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 24417001 && valor <= 42723000) return { fillColor: "rgb(237,57,33)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 42723001 && valor <= 144833037) return { fillColor: "rgb(230,0,0)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
 
@@ -376,14 +373,18 @@
       panel.style.display = "block";
     }
 
-    // Handler de radios con toggle + leyendas + simbología
+    // Handler con toggle (reseleccionar limpia y regresa a base)
     Array.from(radios).forEach(radio => {
       radio.addEventListener('click', function(e) {
-        // Si re-clicas el mismo, limpia y deselecciona
+        var menu = document.getElementById('menuOptions');
+
+        // Toggle: si clicas el mismo seleccionado, se limpia y regresa a base
         if (radio.checked && radio.dataset.selected === "true") {
           limpiarInformes();
-          document.getElementById('menuOptions').style.display = "none";
-          // Traer base al frente
+          radio.checked = false;
+          radio.dataset.selected = "false";
+          menu.style.display = "none";
+          // Traer base (regiones y estado) al frente, municipios atrás
           municipiosLayer && municipiosLayer.bringToBack();
           regionesLayer && regionesLayer.bringToFront();
           edoLayer && edoLayer.bringToFront();
@@ -393,10 +394,12 @@
         // Marcar selección actual y cerrar el menú
         Array.from(radios).forEach(r => r.dataset.selected = "false");
         radio.dataset.selected = "true";
-        document.getElementById('menuOptions').style.display = "none";
+        menu.style.display = "none";
 
+        // Limpia antes de dibujar
         limpiarInformes();
 
+        // Casos de programas
         if (e.target.value === 'informe1' && informesExpTransData) {
           informe1Layer = L.geoJSON(informesExpTransData, {
             style: f => estiloInversion1(getField(f, "ExpTra1eIn"))
@@ -414,6 +417,14 @@
             { color: "rgb(180,150,100)", label: "$126,001 - $240,000" },
             { color: "rgb(137,112,68)", label: "$240,001 - $1,122,000" }
           ]);
+          buildSimbolos([
+            { borderColor: "#999", label: "Municipio" },
+            { borderColor: "#000", label: "Región (discontinua)" },
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" },
+            { fill: "rgb(245,230,210)", label: "Inversión baja" },
+            { fill: "rgb(137,112,68)", label: "Inversión alta" }
+          ]);
+
         } else if (e.target.value === 'informe2' && informesExpTransData) {
           informe2Layer = L.geoJSON(informesExpTransData, {
             style: f => estiloInversion2(getField(f, "ExpTra2dIn"))
@@ -431,6 +442,14 @@
             { color: "rgb(180,150,100)", label: "$517,501 - $1,200,000" },
             { color: "rgb(137,112,68)", label: "$1,200,001 - $3,180,000" }
           ]);
+          buildSimbolos([
+            { borderColor: "#999", label: "Municipio" },
+            { borderColor: "#000", label: "Región (discontinua)" },
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" },
+            { fill: "rgb(245,230,210)", label: "Inversión baja" },
+            { fill: "rgb(137,112,68)", label: "Inversión alta" }
+          ]);
+
         } else if (e.target.value === 'juv1' && informesJuvData) {
           Juv1Layer = L.geoJSON(informesJuvData, {
             style: f => estiloJuv1(getField(f, "InvTJuv1"))
@@ -447,7 +466,15 @@
             { color: "rgb(150,200,150)", label: "$426,001 - $1,056,000" },
             { color: "rgb(100,170,100)", label: "$1,056,001 - $2,178,000" },
             { color: "rgb(55,110,100)", label: "$2,178,001 - $3,530,000" }
-          ], "INVERSIÓN");
+          ], "INVERSIÓN (Juventud)");
+          buildSimbolos([
+            { borderColor: "#999", label: "Municipio" },
+            { borderColor: "#000", label: "Región (discontinua)" },
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" },
+            { fill: "rgb(220,245,220)", label: "Inversión baja" },
+            { fill: "rgb(55,110,100)", label: "Inversión alta" }
+          ]);
+
         } else if (e.target.value === 'juv2' && informesJuvData) {
           Juv2Layer = L.geoJSON(informesJuvData, {
             style: f => estiloJuv2(getField(f, "InvTJuv2"))
@@ -464,7 +491,15 @@
             { color: "rgb(150,200,150)", label: "$298,001 - $604,500" },
             { color: "rgb(100,170,100)", label: "$604,501 - $2,031,500" },
             { color: "rgb(55,110,100)", label: "$2,031,501 - $6,303,500" }
-          ], "INVERSIÓN");
+          ], "INVERSIÓN (Juventud)");
+          buildSimbolos([
+            { borderColor: "#999", label: "Municipio" },
+            { borderColor: "#000", label: "Región (discontinua)" },
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" },
+            { fill: "rgb(220,245,220)", label: "Inversión baja" },
+            { fill: "rgb(55,110,100)", label: "Inversión alta" }
+          ]);
+
         } else if (e.target.value === 'NAFIN1' && informesNAFINData) {
           NAFIN1Layer = L.geoJSON(informesNAFINData, {
             style: f => estiloNAFIN1(getField(f, "imp_1inv"))
@@ -481,7 +516,15 @@
             { color: "rgb(250,131,110)", label: "$800,001 - $1,400,000" },
             { color: "rgb(237,57,33)", label: "$1,400,001 - $2,400,000" },
             { color: "rgb(230,0,0)", label: "$2,400,001 - $5,000,000" }
-          ], "INVERSIÓN");
+          ], "INVERSIÓN (NAFIN 1)");
+          buildSimbolos([
+            { borderColor: "#999", label: "Municipio" },
+            { borderColor: "#000", label: "Región (discontinua)" },
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" },
+            { fill: "rgb(255,182,171)", label: "Inversión baja" },
+            { fill: "rgb(230,0,0)", label: "Inversión alta" }
+          ]);
+
         } else if (e.target.value === 'NAFIN2' && informesNAFINData) {
           NAFIN2Layer = L.geoJSON(informesNAFINData, {
             style: f => estiloNAFIN2(getField(f, "imp_2inv"))
@@ -498,10 +541,18 @@
             { color: "rgb(250,131,110)", label: "$10,000,001 - $25,842,600" },
             { color: "rgb(237,57,33)", label: "$25,842,601 - $44,376,400" },
             { color: "rgb(230,0,0)", label: "$44,376,401 - $105,663,500" }
-          ], "INVERSIÓN");
+          ], "INVERSIÓN (NAFIN 2)");
+          buildSimbolos([
+            { borderColor: "#999", label: "Municipio" },
+            { borderColor: "#000", label: "Región (discontinua)" },
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" },
+            { fill: "rgb(255,182,171)", label: "Inversión baja" },
+            { fill: "rgb(230,0,0)", label: "Inversión alta" }
+          ]);
+
         } else if (e.target.value === 'NAFIN3' && informesNAFINData) {
           NAFIN3Layer = L.geoJSON(informesNAFINData, {
-            style: f => estiloNAFIN3(getField(f, "Imp_3_Actj"))
+            style: f => estiloNAFIN3(getField(f, "imp_3inv"))
           }).addTo(map);
 
           municipiosLayer && municipiosLayer.bringToBack();
@@ -515,7 +566,14 @@
             { color: "rgb(250,131,110)", label: "$5,928,201 - $24,417,000" },
             { color: "rgb(237,57,33)", label: "$24,417,001 - $42,723,000" },
             { color: "rgb(230,0,0)", label: "$42,723,001 - $144,833,037" }
-          ], "INVERSIÓN");
+          ], "INVERSIÓN (NAFIN 3)");
+          buildSimbolos([
+            { borderColor: "#999", label: "Municipio" },
+            { borderColor: "#000", label: "Región (discontinua)" },
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" },
+            { fill: "rgb(255,182,171)", label: "Inversión baja" },
+            { fill: "rgb(230,0,0)", label: "Inversión alta" }
+          ]);
         }
       });
     });

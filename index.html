@@ -441,7 +441,7 @@
             { color: "rgb(55,110,100)", label: "$2,031,501 - $6,303,500" }
           ], "INVERSIÓN");
         } else if (e.target.value === 'NAFIN1' && informesNAFINData) {
-          NAFINLayer = L.geoJSON(informesNAFINData, {
+          NAFIN1Layer = L.geoJSON(informesNAFINData, {
             style: f => estiloNAFIN1(getField(f, "imp_1inv"))
           }).addTo(map);
 

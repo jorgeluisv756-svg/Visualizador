@@ -125,7 +125,10 @@
       <label><input type="radio" name="mapOption" value="NAFIN3"> Impulso NAFIN 3er Informe (Junio)</label><br>
       <label><input type="radio" name="mapOption" value="HgoC1"> Hidalgo Confia en Ti 1er Informe</label><br>
       <label><input type="radio" name="mapOption" value="HgoC2"> Hidalgo Confia en Ti 2do Informe</label><br>
-      <label><input type="radio" name="mapOption" value="Energia2"> Energía para el Bienestar 2do Informe</label>
+      <label><input type="radio" name="mapOption" value="Energia2"> Energía para el Bienestar 2do Informe</label><br>
+      <label><input type="radio" name="mapOption" value="Inversion1"> Consolidación de Inversiones 1er Informe</label><br>
+      <label><input type="radio" name="mapOption" value="Inversion2"> Consolidación de Inversiones 2do Informe</label><br>
+      <label><input type="radio" name="mapOption" value="Inversion3"> Consolidación de Inversiones 3er Informe (Junio)</label>
     </div>
     <div id="legend"><strong>INVERSIÓN</strong></div>
   </div>
@@ -156,8 +159,8 @@
 
     // Capas y datos
     var municipiosLayer, regionesLayer, edoLayer;
-    var informe1Layer, informe2Layer, Juv1Layer, Juv2Layer, NAFIN1Layer, NAFIN2Layer, NAFIN3Layer, HgoC1Layer, HgoC2Layer, Energia2Layer;
-    var informesExpTransData, informesJuvData, informesNAFINData, informesHgoCData, informesEnergiaData;
+    var informe1Layer, informe2Layer, Juv1Layer, Juv2Layer, NAFIN1Layer, NAFIN2Layer, NAFIN3Layer, HgoC1Layer, HgoC2Layer, Energia2Layer, Inversion1Layer, Inversion2Layer, Inversion3Layer;
+    var informesExpTransData, informesJuvData, informesNAFINData, informesHgoCData, informesEnergiaData, informesInversionData;
     var regionesLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
     var municipiosLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
 
@@ -211,6 +214,7 @@
     fetch('NAFIN.geojson').then(res => res.json()).then(data => { informesNAFINData = data; });
     fetch('Hgo_Conf.geojson').then(res => res.json()).then(data => { informesHgoCData = data; });
     fetch('Energia.geojson').then(res => res.json()).then(data => { informesEnergiaData = data; });
+    fetch('Inversion.geojson').then(res => res.json()).then(data => { informesInversionData = data; });
 
     // UI refs
     var legendDiv = document.getElementById('legend');
@@ -234,6 +238,9 @@
       if (HgoC1Layer) { map.removeLayer(HgoC1Layer); HgoC1Layer = null; }
       if (HgoC2Layer) { map.removeLayer(HgoC2Layer); HgoC2Layer = null; }
       if (Energia2Layer) { map.removeLayer(Energia2Layer); Energia2Layer = null; }
+      if (Inversion1Layer) { map.removeLayer(Inversion1Layer); Inversion1Layer = null; }
+      if (Inversion2Layer) { map.removeLayer(Inversion2Layer); Inversion2Layer = null; }
+      if (Inversion3Layer) { map.removeLayer(Inversion3Layer); Inversion3Layer = null; }
       legendDiv.style.display = "none";
       legendDiv.innerHTML = "<strong>INVERSIÓN</strong>";
       document.getElementById('simbolos-panel').style.display = "none";
@@ -372,6 +379,33 @@
       else if (valor >= 42001 && valor <= 124010) return { fillColor: "rgb(190,180,240)", color: "#333", weight: 1, fillOpacity: 1 };
       else if (valor >= 124011 && valor <= 242290) return { fillColor: "rgb(100,160,220)", color: "#333", weight: 1, fillOpacity: 1 };
       else if (valor >= 242291 && valor <= 489000) return { fillColor: "rgb(30,130,200)", color: "#333", weight: 1, fillOpacity: 1 };
+      else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
+    }
+    function estiloInversion1(valorNum) {
+      var valor = toNumberSafe(valorNum);
+      if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 129333333) return { fillColor: "rgb(204,255,255)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 129333334 && valor <= 3400000000) return { fillColor: "rgb(102,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 3400000001 && valor <= 7094294833) return { fillColor: "rgb(0,128,128)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 7094294834 && valor <= 11885000000) return { fillColor: "rgb(0,64,64)", color: "#333", weight: 1, fillOpacity: 1 };
+      else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
+    }
+    function estiloInversion2(valorNum) {
+      var valor = toNumberSafe(valorNum);
+      if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 344448000) return { fillColor: "rgb(204,255,255)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 344448001 && valor <= 1836000000) return { fillColor: "rgb(102,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1836000001 && valor <= 3075715385) return { fillColor: "rgb(0,128,128)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 3075715386 && valor <= 6386715385) return { fillColor: "rgb(0,64,64)", color: "#333", weight: 1, fillOpacity: 1 };
+      else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
+    }
+    function estiloInversion3(valorNum) {
+      var valor = toNumberSafe(valorNum);
+      if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 775200000) return { fillColor: "rgb(204,255,255)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 775200001 && valor <= 1225000000) return { fillColor: "rgb(102,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1225000001 && valor <= 6120000000) return { fillColor: "rgb(0,128,128)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 6120000001 && valor <= 10000000000) return { fillColor: "rgb(0,64,64)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
 
@@ -665,6 +699,74 @@
             { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" }
           ]);
 
+        } else if (e.target.value === 'Inversion1' && informesInversionData) {
+          Inversion1Layer = L.geoJSON(informesInversionData, {
+            style: f => estiloInversion1(getField(f, "Inv_Ben1e"))
+          }).addTo(map);
+
+          municipiosLayer && municipiosLayer.bringToBack();
+          Inversion1Layer && Inversion1Layer.bringToFront();
+          regionesLayer && regionesLayer.bringToFront();
+          edoLayer && edoLayer.bringToFront();
+
+          buildLegend([
+            { color: "rgb(204,204,204)", label: "Sin inversión" },
+            { color: "rgb(204,255,255)", label: "$1 - $129,333,333" },
+            { color: "rgb(102,204,204)", label: "$129,333,334 - $3,400,000,000" },
+            { color: "rgb(0,128,128)", label: "$3,400,000,001 - $7,099,294,833" },
+            { color: "rgb(0,64,64)", label: "$7,099,294,834 - $11,885,000,000" }
+          ], "INVERSIÓN CONSOLIDADA");
+          buildSimbolos([
+            { borderColor: "#999", label: "Municipio" },
+            { borderColor: "#000", label: "Región" },
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" }
+          ]);
+
+        } else if (e.target.value === 'Inversion2' && informesInversionData) {
+          Inversion2Layer = L.geoJSON(informesInversionData, {
+            style: f => estiloInversion2(getField(f, "Inv_Ben2d"))
+          }).addTo(map);
+
+          municipiosLayer && municipiosLayer.bringToBack();
+          Inversion2Layer && Inversion2Layer.bringToFront();
+          regionesLayer && regionesLayer.bringToFront();
+          edoLayer && edoLayer.bringToFront();
+
+          buildLegend([
+            { color: "rgb(204,204,204)", label: "Sin inversión" },
+            { color: "rgb(204,255,255)", label: "$1 - $344,448,000" },
+            { color: "rgb(102,204,204)", label: "$344,448,001 - $1,836,000,000" },
+            { color: "rgb(0,128,128)", label: "$1,836,000,001 - $3,075,715,385" },
+            { color: "rgb(0,64,64)", label: "$3,075,715,386 - $6,386,715,385" }
+          ], "INVERSIÓN CONSOLIDADA");
+          buildSimbolos([
+            { borderColor: "#999", label: "Municipio" },
+            { borderColor: "#000", label: "Región" },
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" }
+          ]);
+
+        } else if (e.target.value === 'Inversion3' && informesInversionData) {
+          Inversion3Layer = L.geoJSON(informesInversionData, {
+            style: f => estiloInversion3(getField(f, "Inv_Ben3e"))
+          }).addTo(map);
+
+          municipiosLayer && municipiosLayer.bringToBack();
+          Inversion3Layer && Inversion3Layer.bringToFront();
+          regionesLayer && regionesLayer.bringToFront();
+          edoLayer && edoLayer.bringToFront();
+
+          buildLegend([
+            { color: "rgb(204,204,204)", label: "Sin inversión" },
+            { color: "rgb(204,255,255)", label: "$1 - $775,200,000" },
+            { color: "rgb(102,204,204)", label: "$775,200,001 - $1,225,000,000" },
+            { color: "rgb(0,128,128)", label: "$1,225,000,001 - $6,120,000,000" },
+            { color: "rgb(0,64,64)", label: "$6,120,000,001 - $10,000,000,000" }
+          ], "INVERSIÓN CONSOLIDADA");
+          buildSimbolos([
+            { borderColor: "#999", label: "Municipio" },
+            { borderColor: "#000", label: "Región" },
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" }
+          ]);
         }
       });
     });

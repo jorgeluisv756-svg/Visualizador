@@ -384,28 +384,28 @@
     function estiloInversion1(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 1 && valor <= 129333333) return { fillColor: "rgb(170,255,85)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 129333334 && valor <= 3400000000) return { fillColor: "rgb(102,170,68)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 3400000001 && valor <= 7094294833) return { fillColor: "rgb(34,102,34)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 7094294834 && valor <= 11885000000) return { fillColor: "rgb(0,51,0)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 129333333) return { fillColor: "rgb(220,245,220)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 129333334 && valor <= 3400000000) return { fillColor: "rgb(150,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 3400000001 && valor <= 7094294833) return { fillColor: "rgb(100,170,100)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 7094294834 && valor <= 11885000000) return { fillColor: "rgb(55,110,110)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
     function estiloInversion2(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 1 && valor <= 344448000) return { fillColor: "rgb(170,255,85)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 344448001 && valor <= 1836000000) return { fillColor: "rgb(102,170,68)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 1836000001 && valor <= 3075715385) return { fillColor: "rgb(34,102,34)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 3075715386 && valor <= 6386715385) return { fillColor: "rgb(0,51,0)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 344448000) return { fillColor: "rgb(220,245,220)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 344448001 && valor <= 1836000000) return { fillColor: "rgb(150,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1836000001 && valor <= 3075715385) return { fillColor: "rgb(100,170,100)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 3075715386 && valor <= 6386715385) return { fillColor: "rgb(55,110,110)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
     function estiloInversion3(valorNum) {
       var valor = toNumberSafe(valorNum);
       if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 1 && valor <= 775200000) return { fillColor: "rgb(170,255,85)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 775200001 && valor <= 1225000000) return { fillColor: "rgb(102,170,68)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 1225000001 && valor <= 6120000000) return { fillColor: "rgb(34,102,34)", color: "#333", weight: 1, fillOpacity: 1 };
-      else if (valor >= 6120000001 && valor <= 10000000000) return { fillColor: "rgb(0,51,0)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 775200000) return { fillColor: "rgb(220,245,220)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 775200001 && valor <= 1225000000) return { fillColor: "rgb(150,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1225000001 && valor <= 6120000000) return { fillColor: "rgb(100,170,100)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 6120000001 && valor <= 10000000000) return { fillColor: "rgb(55,110,110)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
 
@@ -711,10 +711,10 @@
 
           buildLegend([
             { color: "rgb(204,204,204)", label: "Sin inversión" },
-            { color: "rgb(170,255,85)", label: "$1 - $129,333,333" },
-            { color: "rgb(102,170,68)", label: "$129,333,334 - $3,400,000,000" },
-            { color: "rgb(34,102,34)", label: "$3,400,000,001 - $7,099,294,833" },
-            { color: "rgb(0,51,0)", label: "$7,099,294,834 - $11,885,000,000" }
+            { color: "rgb(220,245,220)", label: "$1 - $129,333,333" },
+            { color: "rgb(150,200,150)", label: "$129,333,334 - $3,400,000,000" },
+            { color: "rgb(100,170,100)", label: "$3,400,000,001 - $7,099,294,833" },
+            { color: "rgb(55,110,110)", label: "$7,099,294,834 - $11,885,000,000" }
           ], "INVERSIÓN CONSOLIDADA");
           buildSimbolos([
             { borderColor: "#999", label: "Municipio" },
@@ -734,10 +734,10 @@
 
           buildLegend([
             { color: "rgb(204,204,204)", label: "Sin inversión" },
-            { color: "rgb(170,255,85)", label: "$1 - $344,448,000" },
-            { color: "rgb(102,170,68)", label: "$344,448,001 - $1,836,000,000" },
-            { color: "rgb(34,102,34)", label: "$1,836,000,001 - $3,075,715,385" },
-            { color: "rgb(0,51,0)", label: "$3,075,715,386 - $6,386,715,385" }
+            { color: "rgb(220,245,220)", label: "$1 - $344,448,000" },
+            { color: "rgb(150,200,150)", label: "$344,448,001 - $1,836,000,000" },
+            { color: "rgb(100,170,100)", label: "$1,836,000,001 - $3,075,715,385" },
+            { color: "rgb(55,110,110)", label: "$3,075,715,386 - $6,386,715,385" }
           ], "INVERSIÓN CONSOLIDADA");
           buildSimbolos([
             { borderColor: "#999", label: "Municipio" },
@@ -757,10 +757,10 @@
 
           buildLegend([
             { color: "rgb(204,204,204)", label: "Sin inversión" },
-            { color: "rgb(170,255,85)", label: "$1 - $775,200,000" },
-            { color: "rgb(102,170,68)", label: "$775,200,001 - $1,225,000,000" },
-            { color: "rgb(34,102,34)", label: "$1,225,000,001 - $6,120,000,000" },
-            { color: "rgb(0,51,0)", label: "$6,120,000,001 - $10,000,000,000" }
+            { color: "rgb(220,245,220)", label: "$1 - $775,200,000" },
+            { color: "rgb(150,200,150)", label: "$775,200,001 - $1,225,000,000" },
+            { color: "rgb(100,170,100)", label: "$1,225,000,001 - $6,120,000,000" },
+            { color: "rgb(55,110,110)", label: "$6,120,000,001 - $10,000,000,000" }
           ], "INVERSIÓN CONSOLIDADA");
           buildSimbolos([
             { borderColor: "#999", label: "Municipio" },

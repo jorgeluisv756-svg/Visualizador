@@ -600,7 +600,7 @@
           }).addTo(map);
 
           municipiosLayer && municipiosLayer.bringToBack();
-          Juv1BLayer && JuvB1Layer.bringToFront();
+          Juv1BLayer && Juv1BLayer.bringToFront();
           regionesLayer && regionesLayer.bringToFront();
           edoLayer && edoLayer.bringToFront();
 
@@ -619,7 +619,7 @@
 
         } else if (e.target.value === 'juv2B' && informesJuvData) {
           Juv2BLayer = L.geoJSON(informesJuvData, {
-            style: f => estiloJuv2B(getField(f, "TransJuv2"))
+            style: f => estiloJuv2B(getField(f, "TransfJuv2"))
           }).addTo(map);
 
           municipiosLayer && municipiosLayer.bringToBack();

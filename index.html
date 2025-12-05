@@ -23,21 +23,24 @@
     #logo img { width: 360px; height: auto; display: block; max-width: 90vw; }
 
     #panel {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 1000;
-      background: white;
-      padding: 10px;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      font-family: Arial, sans-serif;
-      font-size: 0.9em;
-      width: 90vw;
-      max-width: 250px;
-      heigth: 200px;
-      overflow-y: auto;  
-    }
+    position: absolute;
+     bottom: 10px;
+     left: 10px;
+     z-index: 1000;
+     background: white;
+     padding: 10px;
+     border-radius: 6px;
+     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+     font-family: Arial, sans-serif;
+     font-size: 0.9em;
+     width: 90vw;
+     max-width: 220px;
+
+     /* comportamiento dinámico */
+     max-height: 250px;   /* altura máxima */
+     overflow-y: auto;    /* scroll si excede */
+     display: none;       /* oculto por defecto */
+     }
     #panel h3 { margin-top: 0; font-size: 14px; text-align: center; }
     #menuOptions { display: none; margin-top: 8px; }
 

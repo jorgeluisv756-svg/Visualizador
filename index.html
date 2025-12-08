@@ -119,8 +119,10 @@
     <h3>Selecciona un programa</h3>
     <button id="menuBtn">Abrir menú</button>
     <div id="menuOptions">
-      <label><input type="radio" name="mapOption" value="exp1"> Tu Experiencia Transforma 1er Informe</label><br>
-      <label><input type="radio" name="mapOption" value="exp2"> Tu Experiencia Transforma 2do Informe</label><br>
+      <label><input type="radio" name="mapOption" value="exp1"> Tu Experiencia Transforma 1er Informe Inversión</label><br>
+      <label><input type="radio" name="mapOption" value="exp2"> Tu Experiencia Transforma 2do Informe Inversión</label><br>
+      <label><input type="radio" name="mapOption" value="exp1b"> Tu Experiencia Transforma 1er Informe Beneficiarios</label><br>
+      <label><input type="radio" name="mapOption" value="exp2b"> Tu Experiencia Transforma 2do Informe Beneficiarios</label><br>
       <label><input type="radio" name="mapOption" value="juv1"> Transformando con la Juventud 1er Informe Inversión</label><br>
       <label><input type="radio" name="mapOption" value="juv2"> Transformando con la Juventud 2do Informe Inversión</label><br>
       <label><input type="radio" name="mapOption" value="juv1B"> Transformando con la Juventud 1er Informe Beneficarios</label><br>
@@ -165,7 +167,7 @@
 
     // Capas y datos
     var municipiosLayer, regionesLayer, edoLayer;
-    var exp1Layer, exp2Layer, Juv1Layer, Juv2Layer, Juv1BLayer, Juv2BLayer, NAFIN1Layer, NAFIN2Layer, NAFIN3Layer, HgoC1Layer, HgoC2Layer, Energia2Layer, Energia2BLayer, Inversion1Layer, Inversion2Layer, Inversion3Layer;
+    var exp1Layer, exp2Layer, exp1bLayer, exp2bLayer, Juv1Layer, Juv2Layer, Juv1BLayer, Juv2BLayer, NAFIN1Layer, NAFIN2Layer, NAFIN3Layer, HgoC1Layer, HgoC2Layer, Energia2Layer, Energia2BLayer, Inversion1Layer, Inversion2Layer, Inversion3Layer;
     var informesExpTransData, informesJuvData, informesNAFINData, informesHgoCData, informesEnergiaData, informesInversionData;
     var regionesLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
     var municipiosLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
@@ -236,6 +238,8 @@
     function limpiarInformes() {
       if (exp1Layer) { map.removeLayer(exp1Layer); exp1Layer = null; }
       if (exp2Layer) { map.removeLayer(exp2Layer); exp2Layer = null; }
+      if (exp1Layer) { map.removeLayer(exp1Layer); exp1bLayer = null; }
+      if (exp2Layer) { map.removeLayer(exp2Layer); exp2bLayer = null; }
       if (Juv1Layer) { map.removeLayer(Juv1Layer); Juv1Layer = null; }
       if (Juv2Layer) { map.removeLayer(Juv2Layer); Juv2Layer = null; }
       if (Juv1BLayer) { map.removeLayer(Juv1BLayer); Juv1BLayer = null; }
@@ -314,7 +318,24 @@
       else if (valor >= 1200001 && valor <= 3180000) return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
-
+    function estiloexp1b(valorNum) {
+      var valor = toNumberSafe(valorNum);
+      if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 2) return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 3 && valor <= 8) return { fillColor: "rgb(225,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 9 && valor <= 23) return { fillColor: "rgb(180,150,100)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 24 && valor <= 43) return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 1 };
+      else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
+    }
+    function estiloexp2b(valorNum) {
+      var valor = toNumberSafe(valorNum);
+      if (isNaN(valor) || valor === 0) return { fillColor: "rgb(204,204,204)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 1 && valor <= 7) return { fillColor: "rgb(245,230,210)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 8 && valor <= 14) return { fillColor: "rgb(225,200,150)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 15 && valor <= 35) return { fillColor: "rgb(180,150,100)", color: "#333", weight: 1, fillOpacity: 1 };
+      else if (valor >= 36 && valor <= 100) return { fillColor: "rgb(137,112,68)", color: "#333", weight: 1, fillOpacity: 1 };
+      else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
+    }
     // Estilos (Juventud)
     function estiloJuv1(valorNum) {
       var valor = toNumberSafe(valorNum);
@@ -352,7 +373,6 @@
       else if (valor >= 138 && valor <= 235) return { fillColor: "rgb(55,110,100)", color: "#333", weight: 1, fillOpacity: 1 };
       else return { fillColor: "#ccc", color: "#333", weight: 1, fillOpacity: 1 };
     }
-
     // Estilos (NAFIN) — rangos exactos que compartiste
     function estiloNAFIN1(valorNum) {
       var valor = toNumberSafe(valorNum);
@@ -546,6 +566,52 @@
             { color: "rgb(180,150,100)", label: "$517,501 - $1,200,000" },
             { color: "rgb(137,112,68)", label: "$1,200,001 - $3,180,000" }
           ], "INVERSIÓN");
+          buildSimbolos([
+            { borderColor: "#999", label: "Municipio" },
+            { borderColor: "#000", label: "Región" },
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" }
+          ]);
+
+        } else if (e.target.value === 'exp1b' && informesExpTransData) {
+          exp1bLayer = L.geoJSON(informesExpTransData, {
+            style: f => estiloexp1b(getField(f, "ExpTra1e"))
+          }).addTo(map);
+
+          municipiosLayer && municipiosLayer.bringToBack();
+          exp1bLayer && exp1bLayer.bringToFront();
+          regionesLayer && regionesLayer.bringToFront();
+          edoLayer && edoLayer.bringToFront();
+
+          buildLegend([
+            { color: "rgb(204,204,204)", label: "Sin beneficiarios" },
+            { color: "rgb(245,230,210)", label: "1 - 2" },
+            { color: "rgb(225,200,150)", label: "3 - 8" },
+            { color: "rgb(180,150,100)", label: "9 - 23" },
+            { color: "rgb(137,112,68)", label: "24 - 43" }
+          ], "BENEFICARIOS");
+          buildSimbolos([
+            { borderColor: "#999", label: "Municipio" },
+            { borderColor: "#000", label: "Región" },
+            { borderColor: "rgb(255,0,0)", label: "Estado de Hidalgo" }
+          ]);
+
+        } else if (e.target.value === 'exp2b' && informesExpTransData) {
+          exp2bLayer = L.geoJSON(informesExpTransData, {
+            style: f => estiloexp2b(getField(f, "ExpTra2d"))
+          }).addTo(map);
+
+          municipiosLayer && municipiosLayer.bringToBack();
+          exp2bLayer && exp2bLayer.bringToFront();
+          regionesLayer && regionesLayer.bringToFront();
+          edoLayer && edoLayer.bringToFront();
+
+          buildLegend([
+            { color: "rgb(204,204,204)", label: "Sin beneficiarios" },
+            { color: "rgb(245,230,210)", label: "1 - 7" },
+            { color: "rgb(225,200,150)", label: "8 - 14" },
+            { color: "rgb(180,150,100)", label: "15 - 35" },
+            { color: "rgb(137,112,68)", label: "36 - 100" }
+          ], "BENEFICARIOS");
           buildSimbolos([
             { borderColor: "#999", label: "Municipio" },
             { borderColor: "#000", label: "Región" },

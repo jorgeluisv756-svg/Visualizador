@@ -194,22 +194,22 @@
       .then(data => {
         municipiosLayer = L.geoJSON(data, { style: { color: "#999", weight: 1, fillOpacity: 0 } }).addTo(map);
         L.geoJSON(data, {
-          onEachFeature: function(feature, layer) {
-            var center = layer.getBounds().getCenter();
-            var label = getField({ properties: feature.properties }, "NOMGEO");
-            if (!label || !center) return;
+         onEachFeature: function(feature, layer) {
+         var label = getField({ properties: feature.properties }, "NOMGEO");
+         if (!label) return;
 
-        // Usa coordenadas personalizadas si existen
-        var center;
-        if (coordsPersonalizadas[nombre]) {
-          center = L.latLng(coordsPersonalizadas[nombre][0], coordsPersonalizadas[nombre][1]);
-        } else {
-          center = layer.getBounds().getCenter();
-        }
-            L.marker(center, { pane: 'labels', interactive: false, icon: L.divIcon({ className: 'empty-icon' }) })
-              .bindTooltip(String(label), { permanent: true, direction: "center", className: "mun-label" })
-              .addTo(municipiosLabelLayer);
-          },
+      // Usa coordenadas personalizadas si existen
+      var center;
+      if (coordsPersonalizadas[label]) {
+        center = L.latLng(coordsPersonalizadas[label][0], coordsPersonalizadas[label][1]);
+      } else {
+        center = layer.getBounds().getCenter();
+      }
+
+      L.marker(center, { pane: 'labels', interactive: false, icon: L.divIcon({ className: 'empty-icon' }) })
+        .bindTooltip(String(label), { permanent: true, direction: "center", className: "mun-label" })
+        .addTo(municipiosLabelLayer);
+      },
           style: { opacity: 0, fillOpacity: 0 }
         });
       });

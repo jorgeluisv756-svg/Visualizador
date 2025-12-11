@@ -172,6 +172,22 @@
     var regionesLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
     var municipiosLabelLayer = L.layerGroup([], { pane: 'labels' }).addTo(map);
 
+    // Diccionario con coordenadas personalizadas
+    const coordsPersonalizadas = {
+      "San Agustín Tlaxiaca": [20.1160389, -98.924683],
+      "Lolotla": [20.9302527, -98.730923],
+      "Tianguistengo": [20.7804, -98.5236694],
+      "Huehuetla": [20.4605527, -98.0690638],
+      "Tulancingo de Bravo": [20.1261446, -98.343032],
+      "Apan": [19.737189, -98.467989],
+      "Chapantongo": [20.2727054, -98.476234],
+      "Mixquiahuala de Juárez": [20.2086027, -98.177212],
+      "Santiago de Anaya": [20.4034083, -98.97816945],
+      "San Salvador": [20.319045, -99.0579583],
+      "Huejutla de Reyes": [21.11740834, -98.44],
+      "Tlanalapa": [19.8369498, -98.5881416]
+    };
+
     // Municipios con etiquetas NOMGEO
     fetch('Municipios.geojson')
       .then(res => res.json())
@@ -182,6 +198,14 @@
             var center = layer.getBounds().getCenter();
             var label = getField({ properties: feature.properties }, "NOMGEO");
             if (!label || !center) return;
+
+        // Usa coordenadas personalizadas si existen
+        var center;
+        if (coordsPersonalizadas[nombre]) {
+          center = L.latLng(coordsPersonalizadas[nombre][0], coordsPersonalizadas[nombre][1]);
+        } else {
+          center = layer.getBounds().getCenter();
+        }
             L.marker(center, { pane: 'labels', interactive: false, icon: L.divIcon({ className: 'empty-icon' }) })
               .bindTooltip(String(label), { permanent: true, direction: "center", className: "mun-label" })
               .addTo(municipiosLabelLayer);
